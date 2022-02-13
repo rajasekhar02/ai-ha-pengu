@@ -1,0 +1,2 @@
+Pengu stops when it hits the wall, hit by a bear, hit by a shark, go to the cell with snow
+Pengu can decide where to when it is stopped by hitting wall, or when it on the snow
