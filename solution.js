@@ -138,12 +138,19 @@ const doesPositionHasGivenItem = function (position, item) {
   return truthValue;
 };
 
-const isFishCaptured = function (capturedFishPositions, position) {
+const isFishExistInCapturedList = function (capturedFishPositions, position) {
   return capturedFishPositions.some((eachFishPosition) => {
     return (
       eachFishPosition[0] === position[0] && eachFishPosition[1] === position[1]
     );
   });
+};
+
+const isFishCaptured = function (currentPosition, fishPosition) {
+  return (
+    fishPosition[0] === currentPosition[0] &&
+    fishPosition[1] === currentPosition[1]
+  );
 };
 
 const checkAMoveIsInvalid = function (position) {
@@ -260,7 +267,7 @@ const moveAroundTheGrid = function (
   // counting the # of captured fishes
   if (
     doesPositionHasGivenItem(startPosition, "fish") &&
-    !isFishCaptured(capturedFishes, startPosition)
+    !isFishExistInCapturedList(capturedFishes, startPosition)
   ) {
     printLog(
       "captured the fish",
@@ -410,6 +417,124 @@ const moveAroundTheGrid = function (
     }
   }
 };
+
+const checkIsItPossibleToMoveFurtherInSameDirection = function (
+  currentPenguLocation,
+  direction
+) {
+  if (
+    [" ", "*"].includes(grid[currentPenguLocation[0]][currentPenguLocation[1]])
+  ) {
+    const newMove = getNewMove(currentPenguLocation, direction);
+    if (doesPositionHasGivenItem(newMove, "wall")) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const findRouteFrom = function (
+  currentPenguLocation,
+  targetFishPosition,
+  visitedPositions,
+  path
+) {
+  const currentMovingDirectionIndex = path[path.length - 1];
+  const conditionsToCallGetValidMoves = [
+    () => path.length === 0,
+    (position) => doesPositionHasGivenItem(position, "snow"),
+    (position) =>
+      checkIsItPossibleToMoveFurtherInSameDirection(
+        position,
+        currentMovingDirectionIndex
+      )
+  ];
+  const visitedPositionKeyFunc = (position) =>
+    `R${position[0]}_C${position[1]}`;
+  if (isFishCaptured(currentPenguLocation, targetFishPosition)) {
+    return {
+      capturedFish: true,
+      path
+    };
+  }
+  if (visitedPositions[visitedPositionKeyFunc(currentPenguLocation)] === 1)
+    return { capturedFish: false };
+  visitedPositions[visitedPositionKeyFunc(currentPenguLocation)] = 1;
+  if (conditionsToCallGetValidMoves.some((x) => x(currentPenguLocation))) {
+    const validMoves = getValidPositions(currentPenguLocation);
+    for (
+      let eachValidMoveId = 0;
+      eachValidMoveId < validMoves.length;
+      eachValidMoveId++
+    ) {
+      let eachMove = validMoves[eachValidMoveId].position;
+      let eachDirection = validMoves[eachValidMoveId].direction;
+      if (isFishCaptured(eachMove, targetFishPosition)) {
+        // console.log(eachMove, targetFishPosition, [...path, eachDirection]);
+        return {
+          capturedFish: true,
+          path: [...path, eachDirection]
+        };
+      }
+      if (!visitedPositions[visitedPositionKeyFunc(eachMove)]) {
+        let routeStatus = findRouteFrom(
+          eachMove,
+          targetFishPosition,
+          visitedPositions,
+          [...path, eachDirection]
+        );
+        // console.log(eachMove, targetFishPosition);
+        if (routeStatus.capturedFish) {
+          return routeStatus;
+        }
+      }
+    }
+    return {
+      capturedFish: false
+    };
+  }
+  const nextFurtherMove = getNewMove(
+    currentPenguLocation,
+    currentMovingDirectionIndex
+  );
+  if (!checkAMoveIsInvalid(nextFurtherMove)) {
+    const routeStatus = findRouteFrom(
+      nextFurtherMove,
+      targetFishPosition,
+      visitedPositions,
+      path
+    );
+    return routeStatus;
+  }
+  // printLog("invalid move");
+  return {
+    capturedFish: false
+  };
+};
+
+const moveAroundToCollectFishes = function () {
+  let currentPenguLocation = penguPosition;
+  for (
+    let eachFishIndex = 0;
+    eachFishIndex < fishPositions.length;
+    eachFishIndex++
+  ) {
+    const targetFishPosition = fishPositions[eachFishIndex];
+    const routeStatus = findRouteFrom(
+      currentPenguLocation,
+      targetFishPosition,
+      {},
+      []
+    );
+    printLog(
+      routeStatus.capturedFish,
+      routeStatus.capturedFish
+        ? routeStatus.path.map((x) => directionNames[x])
+        : "cannot capture the fish"
+    );
+    currentPenguLocation = targetFishPosition;
+  }
+};
 // #endregion function
 
 // #region main function
@@ -443,9 +568,11 @@ const moveAroundTheGrid = function (
     );
     countTotalValidCells();
     grid[penguPosition[0]][penguPosition[1]] = " ";
-    moveAroundTheGrid(penguPosition, [], [], {
-      [`R${penguPosition[0]}_C${penguPosition[1]}`]: getNewCellState()
-    });
+    // moveAroundTheGrid(penguPosition, [], [], {
+    //   [`R${penguPosition[0]}_C${penguPosition[1]}`]: getNewCellState()
+    // });
+
+    moveAroundToCollectFishes();
 
     // printLog(
     //   sortValidPositionsByVisitingFreq(getValidPositions([3, 2]), {
