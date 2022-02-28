@@ -197,8 +197,15 @@ const checkAMoveIsInvalid = function (position) {
   });
 };
 
+/**
+ * Generates all new positions by using the direction array and filters the valid positions
+ * 
+ * @param {Array<number>} currentPosition it is an array of length 2 containing [rowPosition, columnPosition]
+ * @param {number} direction it is a number represents the index of the direction array
+ * @returns {Array<Array<number>>} array of valid positions generated based on the direction array
+ */
 const getValidPositions = function (currentPosition, direction) {
-  const validMoves = [];
+  const validPositions = [];
   for (
     directionIndex = 0;
     directionIndex < directions.length;
@@ -208,19 +215,27 @@ const getValidPositions = function (currentPosition, direction) {
     if (eachDirection === undefined || direction === directionIndex) continue;
     const newPosition = getNewPosition(currentPosition, directionIndex);
     if (checkAMoveIsInvalid(newPosition)) continue;
-    validMoves.push({ position: newPosition, direction: directionIndex });
+    validPositions.push({ position: newPosition, direction: directionIndex });
   }
-  return validMoves;
+  return validPositions;
 };
 
+/**
+ * Checks whether it is possible to move futher in same direction based on the given currentPenguPosition and direction
+ * 
+ * @param {Array<number>} currentPenguPosition it is an array of length 2 containing [rowPosition, columnPosition]
+ * @param {number} direction it is a number represents the index of the direction array
+ * @returns {boolean} if newMove from the currentPenguPosition and direction is not having a wall then it returns false
+ *                    else true
+ */
 const isItPossibleToMoveFurtherInSameDirection = function (
-  currentPenguLocation,
+  currentPenguPosition,
   direction
 ) {
   if (
-    [" ", "*"].includes(grid[currentPenguLocation[0]][currentPenguLocation[1]])
+    [" ", "*"].includes(grid[currentPenguPosition[0]][currentPenguPosition[1]])
   ) {
-    const newMove = getNewPosition(currentPenguLocation, direction);
+    const newMove = getNewPosition(currentPenguPosition, direction);
     if (doesPositionHasGivenItem(newMove, "wall")) {
       return false;
     } else {
@@ -230,12 +245,29 @@ const isItPossibleToMoveFurtherInSameDirection = function (
   return false;
 };
 
+/**
+ * Casts the given position into a string
+ * 
+ * @param {Array<number>} position it is an array of length 2 containing [rowPosition, columnPosition]
+ * @returns {string} it of the form R<row number>_C<column number>
+ *  
+ */
 const castPositionToString = function (position) {
   return `R${position[0]}_C${position[1]}`;
 };
 
+/**
+ * Recursively traverses the grid by using the current pengu position. It stores the fishes caught in the fishesCaughtWhileTraversing array
+ * and directions used while traversing in the path array
+ * 
+ * @param {Array<number>} currentPenguPosition it is an array of length 2 containing [rowPosition, columnPosition]
+ * @param {Array<number>} path it is an array of numbers represents the index of the direction array 
+ * @param {Array<string>} fishesCaughtWhileTraversing it is an array of positions casted to strings representing the fishes caught by the pengu while traversing
+ * @returns {Object< boolean, Array<string>,Array<number>, Array<number> >} Object containing the statusof the game, 
+ * fishes caught while traversing, direction visited as path, current pengu location
+ */
 const findRouteFrom = function (
-  currentPenguLocation,
+  currentPenguPosition,
   path,
   fishesCaughtWhileTraversing
 ) {
@@ -254,25 +286,25 @@ const findRouteFrom = function (
       status,
       fishesCaughtWhileTraversing,
       path: finalPath,
-      currentPenguLocation: penguPosition
+      currentPenguPosition: penguPosition
     };
   };
   const canSelectNewMoves = conditionsToCallGetValidMoves.some((x) =>
-    x(currentPenguLocation)
+    x(currentPenguPosition)
   );
   // Bear or Shark killed the pengu
-  if (isPenguKilled(currentPenguLocation)) {
-    return returnObjectFunc("KILLED", currentPenguLocation, path);
+  if (isPenguKilled(currentPenguPosition)) {
+    return returnObjectFunc("KILLED", currentPenguPosition, path);
   }
   // eat the fish if the position has any
   if (
-    doesPositionHasGivenItem(currentPenguLocation, "fish") &&
+    doesPositionHasGivenItem(currentPenguPosition, "fish") &&
     !fishesCaughtWhileTraversing.includes(
-      castPositionToString(currentPenguLocation)
+      castPositionToString(currentPenguPosition)
     )
   ) {
     fishesCaughtWhileTraversing.push(
-      castPositionToString(currentPenguLocation)
+      castPositionToString(currentPenguPosition)
     );
   }
   // if all the fishes in the grid are eaten then victory
@@ -280,15 +312,15 @@ const findRouteFrom = function (
     fishesCaughtWhileTraversing.length === fishPositions.length &&
     canSelectNewMoves
   ) {
-    return returnObjectFunc("VICTORY", currentPenguLocation, path);
+    return returnObjectFunc("VICTORY", currentPenguPosition, path);
   }
   // stop traversing over the grid when pengu completed 6 moves and has a chance to select the next move
   if (path.length >= 6 && canSelectNewMoves) {
-    return returnObjectFunc("GAME_OVER", currentPenguLocation, path);
+    return returnObjectFunc("GAME_OVER", currentPenguPosition, path);
   }
   // Triggers when pengu reaches the snow cell or stopped by hitting the wall or at the start of the traversal
   if (canSelectNewMoves) {
-    const validMoves = getValidPositions(currentPenguLocation);
+    const validMoves = getValidPositions(currentPenguPosition);
     let randomDirection = getRandomIndex(0, validMoves.length - 1);
     let eachMove = validMoves[randomDirection].position;
     let eachDirection = validMoves[randomDirection].direction;
@@ -303,7 +335,7 @@ const findRouteFrom = function (
     return routeStatus;
   }
   const futherMove = getNewPosition(
-    currentPenguLocation,
+    currentPenguPosition,
     currentMovingDirectionIndex
   );
   if (!checkAMoveIsInvalid(futherMove)) {
@@ -314,12 +346,18 @@ const findRouteFrom = function (
     );
     return routeStatus;
   }
-  return returnObjectFunc("END", currentPenguLocation, path);
+  return returnObjectFunc("END", currentPenguPosition, path);
 };
 
+/**
+ * Generates an output file by using the outputObj
+ * 
+ * @param {Object< boolean, Array<string>,Array<number>, Array<number> >} outputObj it is an object containing the status of the game, 
+ * fishes caught while traversing, direction visited as path, current pengu location
+ */
 const generateOutputFile = async function (outputObj) {
   try {
-    const { status, path, fishesCaughtWhileTraversing, currentPenguLocation } =
+    const { status, path, fishesCaughtWhileTraversing, currentPenguPosition } =
       outputObj;
     const updatedGrid = grid
       .map((row, indexRow) => {
@@ -329,8 +367,8 @@ const generateOutputFile = async function (outputObj) {
               castPositionToString([indexRow, indexCol])
             );
             if (
-              currentPenguLocation[0] === indexRow &&
-              currentPenguLocation[1] === indexCol
+              currentPenguPosition[0] === indexRow &&
+              currentPenguPosition[1] === indexCol
             ) {
               return status === "KILLED" ? "X" : "P";
             }
@@ -355,6 +393,9 @@ const generateOutputFile = async function (outputObj) {
 // #endregion function
 
 // #region main function
+/**
+ * Main function that drives the solution
+ */
 (async function () {
   try {
     const data = await fs.readFile(inputFileName, "utf8");
@@ -374,5 +415,4 @@ const generateOutputFile = async function (outputObj) {
     console.log("something went wrong", err);
   }
 })();
-
 // #endregion main function
