@@ -89,6 +89,14 @@ const directionNames = [
 // #endregion variables
 
 // #region helper functions
+
+/**
+ * Stores the given position <row, column> in the corresponding the symbol array
+ * 
+ * @param {string} symbol it can be any symbol from the set of symbols ['*','U','S','#']
+ * @param {number} rowPosition it is the row position in the grid
+ * @param {number} colPosition it is the column position in the grid
+ */
 const noteThePosition = function (symbol, rowPosition, colPosition) {
   printLog(
     `noteThePosition`,
@@ -103,6 +111,12 @@ const noteThePosition = function (symbol, rowPosition, colPosition) {
   symbolToPositionsArray[symbolToName[symbol]].push([rowPosition, colPosition]);
 };
 
+/**
+ * Processes the array of strings. 
+ * Uses noteThePosition method to store the position in the corresponding symbol array
+ * 
+ * @param {Array<string>} gridStrings it contains the array of strings each of length equal to variable gridColsSize and its length is equal to the variable gridRowsSize
+ */
 const extractGridPositions = function (gridStrings) {
   printLog("extractGridPositions", gridStrings.join("\n"));
   gridStrings.forEach((eachLine, rowPosition) => {
@@ -116,6 +130,15 @@ const extractGridPositions = function (gridStrings) {
   });
 };
 
+/**
+ * Checks whether the position is present in any of the symbols array
+ * 
+ * @param {Array<number>} position it is an array of length 2 containing [rowPosition, columnPosition]
+ * @param {string} item it can be any symbol from the set of symbols ['*','U','S','#']
+ * @returns {boolean} if position exists in the symbolToPositionsArray return true 
+ *                    else return false
+ */
+
 const doesPositionHasGivenItem = function (position, item) {
   const truthValue = symbolToPositionsArray[item].some((eachItemPosition) => {
     return (
@@ -125,6 +148,14 @@ const doesPositionHasGivenItem = function (position, item) {
   return truthValue;
 };
 
+/**
+ * Checks whether the current position of the pengu is occupied by the bear or shark
+ * 
+ * @param {Array<number>} currentPosition it is an array of length 2 containing [rowPosition, columnPosition]
+ * @returns if current position has a bear or shark it returns true
+ *          else it return false
+ */
+
 const isPenguKilled = function (currentPosition) {
   return (
     doesPositionHasGivenItem(currentPosition, "bear") ||
@@ -132,13 +163,27 @@ const isPenguKilled = function (currentPosition) {
   );
 };
 
-const getNewMove = function (currentMove, direction) {
+/**
+ * Creates an new position from the given current position and the direction
+ * 
+ * @param {Array<number>} currentPosition it is an array of length 2 containing [rowPosition, columnPosition]
+ * @param {number} direction it is a number represents the index of the direction array
+ * @returns {Array<number>} newPosition is an array of length 2 containing [rowPosition, columnPosition]
+ */
+const getNewPosition = function (currentPosition, direction) {
   return [
-    currentMove[0] + directions[direction][0],
-    currentMove[1] + directions[direction][1]
+    currentPosition[0] + directions[direction][0],
+    currentPosition[1] + directions[direction][1]
   ];
 };
 
+/**
+ * Checks whether the given position is invalid or not
+ * 
+ * @param {Array<number>} position it is an array of length 2 containing [rowPosition, columnPosition]
+ * @returns if position is out of the grid or has a wall then it returns true
+ *          else it return false
+ */
 const checkAMoveIsInvalid = function (position) {
   const invalidMoves = [
     (position) => position[0] > gridRowsSize - 1 || position[0] <= 0,
@@ -161,7 +206,7 @@ const getValidPositions = function (currentPosition, direction) {
   ) {
     const eachDirection = directions[directionIndex];
     if (eachDirection === undefined || direction === directionIndex) continue;
-    const newPosition = getNewMove(currentPosition, directionIndex);
+    const newPosition = getNewPosition(currentPosition, directionIndex);
     if (checkAMoveIsInvalid(newPosition)) continue;
     validMoves.push({ position: newPosition, direction: directionIndex });
   }
@@ -175,7 +220,7 @@ const isItPossibleToMoveFurtherInSameDirection = function (
   if (
     [" ", "*"].includes(grid[currentPenguLocation[0]][currentPenguLocation[1]])
   ) {
-    const newMove = getNewMove(currentPenguLocation, direction);
+    const newMove = getNewPosition(currentPenguLocation, direction);
     if (doesPositionHasGivenItem(newMove, "wall")) {
       return false;
     } else {
@@ -257,7 +302,7 @@ const findRouteFrom = function (
     );
     return routeStatus;
   }
-  const futherMove = getNewMove(
+  const futherMove = getNewPosition(
     currentPenguLocation,
     currentMovingDirectionIndex
   );
