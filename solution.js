@@ -349,6 +349,15 @@ const findRouteFrom = function (
   return returnObjectFunc("END", currentPenguPosition, path);
 };
 
+/**
+ * 
+ * Function takes the currentState as input and traverse in the same direction until the below conditions are met:
+ * 1. when pengu is killed by the shark or the bear
+ * 2. when pengu reaches the snow cell
+ * 3. when pengu is struck by the wall
+ * 
+ * @param {Object< string, Array<string>, Array<number>, Array<number> >}
+ */
 const simulateTraversingInTheSameDirection = function (currentState) {
   const { position, fishesCaughtWhileTraversing, status, path } = currentState;
   const currentMovingDirectionIndex = path[index - 1];
@@ -383,12 +392,19 @@ const simulateTraversingInTheSameDirection = function (currentState) {
   ];
   return {
 	  status: conditionToStopSimulationMapStatus[conditionThatStoppedSimulation],
-	  currentPenguPosition: tempPosition,
 	  fishCaughtWhileTraversing: tempFishesCaughtWhileTraversing,
+	  currentPenguPosition: tempPosition,
 	  path
   }
 };
 
+/**
+ * 
+ * Contains the implementation of the breadth first search over the game
+ * 
+ * @param {Object< string, Array<string>, Array<number>, Array<number> >} Object containing the statusof the game,
+ * fishes caught while traversing, direction visited as path, current pengu location
+ */ 
 const findRouteUsingBFSFrom = function (initialState) {
   const queue = [initialState];
   while (queue.length > 0) {
