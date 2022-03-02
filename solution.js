@@ -363,7 +363,8 @@ const simulateTraversingInTheSameDirection = function (currentState) {
   ];
   let tempPosition = currentPenguPosition;
   let tempFishesCaughtWhileTraversing = [...fishesCaughtWhileTraversing];
-  while (conditionToStopSimulation.some(tempPosition)) {
+  let conditionThatStoppedSimulation = conditionToStopSimulation.map(x=>x(tempPosition)).indexOf(x=>x);
+  while (conditionThanStoppedSimulation>-1) {
     if (
       doesPositionHasGivenItem(tempPosition, "fish") &&
       !tempFishesCaughtWhileTraversing.includes(
@@ -373,12 +374,19 @@ const simulateTraversingInTheSameDirection = function (currentState) {
       tempFishesCaughtWhileTraversing.push(castPositionToString(eachValidMove));
     }
     tempPosition = getNewPosition(tempPosition, currentMovingDirectionIndex);
+    conditionThatStoppedSimulation = conditionToStopSimulation.map(x=>x(tempPosition)).indexOf(x=>x);
   }
-  const statusToConditionToStopSimulationMap = [
+  const conditionToStopSimulationMapStatus = [
     "KILLED",
     "ON_SNOW",
     "STUCK_BY_WALL"
   ];
+  return {
+	  status: conditionToStopSimulationMapStatus[conditionThatStoppedSimulation],
+	  currentPenguPosition: tempPosition,
+	  fishCaughtWhileTraversing: tempFishesCaughtWhileTraversing,
+	  path
+  }
 };
 
 const findRouteUsingBFSFrom = function (initialState) {
@@ -387,7 +395,6 @@ const findRouteUsingBFSFrom = function (initialState) {
     const currentState = queue.shift();
     const { currentPenguPosition, fishesCaughtWhileTraversing, status, path } =
       currentState;
-
     if (fishesCaughtWhileTraversing.length >= 8) {
       currentState.status = "VICTORY";
       return currentState;
@@ -395,6 +402,9 @@ const findRouteUsingBFSFrom = function (initialState) {
     if (isPenguKilled(currentState.position)) {
       continue;
     }
+    if([" ", "*"].includes(grid[currentPenguPosition[0]][currentPenguPosition[1]])){
+		simulateTraversingInTheSameDirection(currentState)
+	}
     const currentMovingDirectionIndex = path[path.length - 1];
     const conditionsToCallGetValidMoves = [
       () => path.length === 0,
@@ -409,17 +419,8 @@ const findRouteUsingBFSFrom = function (initialState) {
       (eachValidMove) => {
         const copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
-
-        if (
-          doesPositionHasGivenItem(eachValidMove.position, "fish") &&
-          !copyOfCurrentState.fishesCaughtWhileTraversing.includes(
-            castPositionToString(eachValidMove)
-          )
-        ) {
-          copyOfCurrentState.fishesCaughtWhileTraversing.push(
-            castPositionToString(eachValidMove)
-          );
-        }
+		copyOfCurrentState.path.push(eachValidMode.direction);
+		queue.push(copyOfCurrentState);
       }
     );
   }
