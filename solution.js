@@ -92,7 +92,7 @@ const directionNames = [
 
 /**
  * Stores the given position <row, column> in the corresponding the symbol array
- * 
+ *
  * @param {string} symbol it can be any symbol from the set of symbols ['*','U','S','#']
  * @param {number} rowPosition it is the row position in the grid
  * @param {number} colPosition it is the column position in the grid
@@ -112,9 +112,9 @@ const noteThePosition = function (symbol, rowPosition, colPosition) {
 };
 
 /**
- * Processes the array of strings. 
+ * Processes the array of strings.
  * Uses noteThePosition method to store the position in the corresponding symbol array
- * 
+ *
  * @param {Array<string>} gridStrings it contains the array of strings each of length equal to variable gridColsSize and its length is equal to the variable gridRowsSize
  */
 const extractGridPositions = function (gridStrings) {
@@ -132,10 +132,10 @@ const extractGridPositions = function (gridStrings) {
 
 /**
  * Checks whether the position is present in any of the symbols array
- * 
+ *
  * @param {Array<number>} position it is an array of length 2 containing [rowPosition, columnPosition]
  * @param {string} item it can be any symbol from the set of symbols ['*','U','S','#']
- * @returns {boolean} if position exists in the symbolToPositionsArray return true 
+ * @returns {boolean} if position exists in the symbolToPositionsArray return true
  *                    else return false
  */
 
@@ -150,7 +150,7 @@ const doesPositionHasGivenItem = function (position, item) {
 
 /**
  * Checks whether the current position of the pengu is occupied by the bear or shark
- * 
+ *
  * @param {Array<number>} currentPosition it is an array of length 2 containing [rowPosition, columnPosition]
  * @returns if current position has a bear or shark it returns true
  *          else it return false
@@ -165,7 +165,7 @@ const isPenguKilled = function (currentPosition) {
 
 /**
  * Creates an new position from the given current position and the direction
- * 
+ *
  * @param {Array<number>} currentPosition it is an array of length 2 containing [rowPosition, columnPosition]
  * @param {number} direction it is a number represents the index of the direction array
  * @returns {Array<number>} newPosition is an array of length 2 containing [rowPosition, columnPosition]
@@ -179,7 +179,7 @@ const getNewPosition = function (currentPosition, direction) {
 
 /**
  * Checks whether the given position is invalid or not
- * 
+ *
  * @param {Array<number>} position it is an array of length 2 containing [rowPosition, columnPosition]
  * @returns if position is out of the grid or has a wall then it returns true
  *          else it return false
@@ -199,7 +199,7 @@ const checkAMoveIsInvalid = function (position) {
 
 /**
  * Generates all new positions by using the direction array and filters the valid positions
- * 
+ *
  * @param {Array<number>} currentPosition it is an array of length 2 containing [rowPosition, columnPosition]
  * @param {number} direction it is a number represents the index of the direction array
  * @returns {Array<Array<number>>} array of valid positions generated based on the direction array
@@ -222,7 +222,7 @@ const getValidPositions = function (currentPosition, direction) {
 
 /**
  * Checks whether it is possible to move futher in same direction based on the given currentPenguPosition and direction
- * 
+ *
  * @param {Array<number>} currentPenguPosition it is an array of length 2 containing [rowPosition, columnPosition]
  * @param {number} direction it is a number represents the index of the direction array
  * @returns {boolean} if newMove from the currentPenguPosition and direction is not having a wall then it returns false
@@ -247,10 +247,10 @@ const isItPossibleToMoveFurtherInSameDirection = function (
 
 /**
  * Casts the given position into a string
- * 
+ *
  * @param {Array<number>} position it is an array of length 2 containing [rowPosition, columnPosition]
  * @returns {string} it of the form R<row number>_C<column number>
- *  
+ *
  */
 const castPositionToString = function (position) {
   return `R${position[0]}_C${position[1]}`;
@@ -259,11 +259,11 @@ const castPositionToString = function (position) {
 /**
  * Recursively traverses the grid by using the current pengu position. It stores the fishes caught in the fishesCaughtWhileTraversing array
  * and directions used while traversing in the path array
- * 
+ *
  * @param {Array<number>} currentPenguPosition it is an array of length 2 containing [rowPosition, columnPosition]
- * @param {Array<number>} path it is an array of numbers represents the index of the direction array 
+ * @param {Array<number>} path it is an array of numbers represents the index of the direction array
  * @param {Array<string>} fishesCaughtWhileTraversing it is an array of positions casted to strings representing the fishes caught by the pengu while traversing
- * @returns {Object< boolean, Array<string>,Array<number>, Array<number> >} Object containing the statusof the game, 
+ * @returns {Object< boolean, Array<string>,Array<number>, Array<number> >} Object containing the statusof the game,
  * fishes caught while traversing, direction visited as path, current pengu location
  */
 const findRouteFrom = function (
@@ -349,10 +349,86 @@ const findRouteFrom = function (
   return returnObjectFunc("END", currentPenguPosition, path);
 };
 
+const simulateTraversingInTheSameDirection = function (currentState) {
+  const { position, fishesCaughtWhileTraversing, status, path } = currentState;
+  const currentMovingDirectionIndex = path[index - 1];
+  const conditionToStopSimulation = [
+    (position) => isPenguKilled(position),
+    (position) => doesPositionHasGivenItem(position, "snow"),
+    (position) =>
+      !isItPossibleToMoveFurtherInSameDirection(
+        position,
+        currentMovingDirectionIndex
+      )
+  ];
+  let tempPosition = currentPenguPosition;
+  let tempFishesCaughtWhileTraversing = [...fishesCaughtWhileTraversing];
+  while (conditionToStopSimulation.some(tempPosition)) {
+    if (
+      doesPositionHasGivenItem(tempPosition, "fish") &&
+      !tempFishesCaughtWhileTraversing.includes(
+        castPositionToString(eachValidMove)
+      )
+    ) {
+      tempFishesCaughtWhileTraversing.push(castPositionToString(eachValidMove));
+    }
+    tempPosition = getNewPosition(tempPosition, currentMovingDirectionIndex);
+  }
+  const statusToConditionToStopSimulationMap = [
+    "KILLED",
+    "ON_SNOW",
+    "STUCK_BY_WALL"
+  ];
+};
+
+const findRouteUsingBFSFrom = function (initialState) {
+  const queue = [initialState];
+  while (queue.length > 0) {
+    const currentState = queue.shift();
+    const { currentPenguPosition, fishesCaughtWhileTraversing, status, path } =
+      currentState;
+
+    if (fishesCaughtWhileTraversing.length >= 8) {
+      currentState.status = "VICTORY";
+      return currentState;
+    }
+    if (isPenguKilled(currentState.position)) {
+      continue;
+    }
+    const currentMovingDirectionIndex = path[path.length - 1];
+    const conditionsToCallGetValidMoves = [
+      () => path.length === 0,
+      (position) => doesPositionHasGivenItem(position, "snow"),
+      (position) =>
+        !isItPossibleToMoveFurtherInSameDirection(
+          position,
+          currentMovingDirectionIndex
+        )
+    ];
+    getValidPositions(currentState.currentPenguPosition).forEach(
+      (eachValidMove) => {
+        const copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
+        copyOfCurrentState.currentPenguPosition = eachValidMove.position;
+
+        if (
+          doesPositionHasGivenItem(eachValidMove.position, "fish") &&
+          !copyOfCurrentState.fishesCaughtWhileTraversing.includes(
+            castPositionToString(eachValidMove)
+          )
+        ) {
+          copyOfCurrentState.fishesCaughtWhileTraversing.push(
+            castPositionToString(eachValidMove)
+          );
+        }
+      }
+    );
+  }
+};
+
 /**
  * Generates an output file by using the outputObj
- * 
- * @param {Object< boolean, Array<string>,Array<number>, Array<number> >} outputObj it is an object containing the status of the game, 
+ *
+ * @param {Object< boolean, Array<string>,Array<number>, Array<number> >} outputObj it is an object containing the status of the game,
  * fishes caught while traversing, direction visited as path, current pengu location
  */
 const generateOutputFile = async function (outputObj) {
@@ -409,7 +485,13 @@ const generateOutputFile = async function (outputObj) {
     // create the grid
     extractGridPositions(gridStrings);
     grid[penguPosition[0]][penguPosition[1]] = " ";
-    let result = findRouteFrom(penguPosition, [], []);
+    let result = findRouteUsingBFSFrom({
+      currentPenguPosition: penguPosition,
+      fishesCaughtWhileTraversing: [],
+      path: [],
+      status: "INITIAL"
+    });
+    // findRouteFrom(penguPosition, [], []);
     await generateOutputFile(result);
   } catch (err) {
     console.log("something went wrong", err);
