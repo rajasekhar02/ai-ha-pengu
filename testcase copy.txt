@@ -29,11 +29,11 @@
 #*#*#*#
 ##   ##
 #* 0 *#
-##   ##
+## P ##
 #*#*#*#
 #######
 
-// 5. for testing the visiting key
+// 5. for testing the visiting key and failing case
 7 7
 #######
 #*#*#*#

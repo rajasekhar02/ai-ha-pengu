@@ -461,6 +461,10 @@ const findRouteUsingBFSFrom = function (initialState) {
       }
       continue;
     }
+    console.log(
+      currentState.fishesCaughtWhileTraversing.length,
+      "after simulation"
+    );
     if (currentState.fishesCaughtWhileTraversing.length >= 8) {
       currentState.status = "VICTORY";
       return currentState;
@@ -470,19 +474,19 @@ const findRouteUsingBFSFrom = function (initialState) {
         const copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
         copyOfCurrentState.path.push(eachValidMove.direction);
-        if (
-          doesPositionHasGivenItem(
-            copyOfCurrentState.currentPenguPosition,
-            "fish"
-          ) &&
-          !copyOfCurrentState.fishesCaughtWhileTraversing.includes(
-            castPositionToString(copyOfCurrentState.currentPenguPosition)
-          )
-        ) {
-          copyOfCurrentState.fishesCaughtWhileTraversing.push(
-            castPositionToString(copyOfCurrentState.currentPenguPosition)
-          );
-        }
+        // if (
+        //   doesPositionHasGivenItem(
+        //     copyOfCurrentState.currentPenguPosition,
+        //     "fish"
+        //   ) &&
+        //   !copyOfCurrentState.fishesCaughtWhileTraversing.includes(
+        //     castPositionToString(copyOfCurrentState.currentPenguPosition)
+        //   )
+        // ) {
+        //   copyOfCurrentState.fishesCaughtWhileTraversing.push(
+        //     castPositionToString(copyOfCurrentState.currentPenguPosition)
+        //   );
+        // }
         const visitedStateString = castStateToString(
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
