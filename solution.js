@@ -424,7 +424,6 @@ const findRouteUsingBFSFrom = function (initialState) {
     currentState = queue.shift();
     const currentMovingDirectionIndex = currentState.path[currentState.path.length - 1];
     console.log(JSON.stringify(currentState), currentState.fishesCaughtWhileTraversing.length, " state from queue");
-
     if (currentState.fishesCaughtWhileTraversing.length >= 8) {
       currentState.status = "VICTORY";
       return currentState;
