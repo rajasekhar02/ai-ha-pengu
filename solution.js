@@ -258,7 +258,7 @@ const castPositionToString = function (position) {
 
 const castStateToString = function (fromPosition, toPosition, fishesCaught) {
   return `R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}`;
-}
+};
 /**
  * Recursively traverses the grid by using the current pengu position. It stores the fishes caught in the fishesCaughtWhileTraversing array
  * and directions used while traversing in the path array
@@ -353,29 +353,36 @@ const findRouteFrom = function (
 };
 
 /**
- * 
+ *
  * Function takes the currentState as input and traverse in the same direction until the below conditions are met:
  * 1. when pengu is killed by the shark or the bear
  * 2. when pengu reaches the snow cell
  * 3. when pengu is struck by the wall
- * 
+ *
  * @param {Object< string, Array<string>, Array<number>, Array<number> >}
  */
 const simulateTraversingInTheSameDirection = function (currentState) {
-  const { currentPenguPosition, fishesCaughtWhileTraversing, path } = currentState;
+  const { currentPenguPosition, fishesCaughtWhileTraversing, path } =
+    currentState;
   const currentMovingDirectionIndex = path[path.length - 1];
   const conditionToStopSimulation = [
     (position) => isPenguKilled(position),
     (position) => doesPositionHasGivenItem(position, "snow"),
-    (position) => doesPositionHasGivenItem(getNewPosition(position, currentMovingDirectionIndex), "wall")
+    (position) =>
+      doesPositionHasGivenItem(
+        getNewPosition(position, currentMovingDirectionIndex),
+        "wall"
+      )
   ];
   // getNewPosition(position, currentMovingDirectionIndex),
   //   'wall'
   let tempPosition = currentPenguPosition;
   let tempFishesCaughtWhileTraversing = [...fishesCaughtWhileTraversing];
   console.log(tempPosition);
-  let conditionThatStoppedSimulation = conditionToStopSimulation.map(x => x(tempPosition)).indexOf(true);
-  console.log(conditionThatStoppedSimulation, currentMovingDirectionIndex)
+  let conditionThatStoppedSimulation = conditionToStopSimulation
+    .map((x) => x(tempPosition))
+    .indexOf(true);
+  console.log(conditionThatStoppedSimulation, currentMovingDirectionIndex);
   while (conditionThatStoppedSimulation === -1) {
     if (
       doesPositionHasGivenItem(tempPosition, "fish") &&
@@ -386,7 +393,9 @@ const simulateTraversingInTheSameDirection = function (currentState) {
       tempFishesCaughtWhileTraversing.push(castPositionToString(tempPosition));
     }
     tempPosition = getNewPosition(tempPosition, currentMovingDirectionIndex);
-    conditionThatStoppedSimulation = conditionToStopSimulation.map(x => x(tempPosition)).indexOf(true);
+    conditionThatStoppedSimulation = conditionToStopSimulation
+      .map((x) => x(tempPosition))
+      .indexOf(true);
   }
   if (
     doesPositionHasGivenItem(tempPosition, "fish") &&
@@ -399,20 +408,20 @@ const simulateTraversingInTheSameDirection = function (currentState) {
   const conditionToStopSimulationMapStatus = [
     "KILLED",
     "ON_SNOW",
-    "STUCK_BY_WALL",
+    "STUCK_BY_WALL"
   ];
   return {
     status: conditionToStopSimulationMapStatus[conditionThatStoppedSimulation],
     fishesCaughtWhileTraversing: tempFishesCaughtWhileTraversing,
     currentPenguPosition: tempPosition,
     path
-  }
+  };
 };
 
 /**
- * 
+ *
  * Contains the implementation of the breadth first search over the game
- * 
+ *
  * @param {Object< string, Array<string>, Array<number>, Array<number> >} Object containing the statusof the game,
  * fishes caught while traversing, direction visited as path, current pengu location
  */
@@ -422,13 +431,25 @@ const findRouteUsingBFSFrom = function (initialState) {
   const visitedStates = new Set();
   while (queue.length > 0) {
     currentState = queue.shift();
-    const currentMovingDirectionIndex = currentState.path[currentState.path.length - 1];
-    console.log(JSON.stringify(currentState), currentState.fishesCaughtWhileTraversing.length, " state from queue");
+    const currentMovingDirectionIndex =
+      currentState.path[currentState.path.length - 1];
+    console.log(
+      JSON.stringify(currentState),
+      currentState.fishesCaughtWhileTraversing.length,
+      " state from queue"
+    );
     if (currentState.fishesCaughtWhileTraversing.length >= 8) {
       currentState.status = "VICTORY";
       return currentState;
     }
-    if (currentState.path.length > 0 && [" ", "*"].includes(grid[currentState.currentPenguPosition[0]][currentState.currentPenguPosition[1]])) {
+    if (
+      currentState.path.length > 0 &&
+      [" ", "*"].includes(
+        grid[currentState.currentPenguPosition[0]][
+          currentState.currentPenguPosition[1]
+        ]
+      )
+    ) {
       console.log(JSON.stringify(currentState), " before");
       currentState = simulateTraversingInTheSameDirection(currentState);
       console.log(JSON.stringify(currentState), " after");
@@ -444,34 +465,45 @@ const findRouteUsingBFSFrom = function (initialState) {
       currentState.status = "VICTORY";
       return currentState;
     }
-    getValidPositions(currentState.currentPenguPosition, currentMovingDirectionIndex).forEach(
+    getValidPositions(currentState.currentPenguPosition).forEach(
       (eachValidMove) => {
         const copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
         copyOfCurrentState.path.push(eachValidMove.direction);
         if (
-          doesPositionHasGivenItem(copyOfCurrentState.currentPenguPosition, "fish") &&
+          doesPositionHasGivenItem(
+            copyOfCurrentState.currentPenguPosition,
+            "fish"
+          ) &&
           !copyOfCurrentState.fishesCaughtWhileTraversing.includes(
             castPositionToString(copyOfCurrentState.currentPenguPosition)
           )
         ) {
-          copyOfCurrentState.fishesCaughtWhileTraversing.push(castPositionToString(copyOfCurrentState.currentPenguPosition));
+          copyOfCurrentState.fishesCaughtWhileTraversing.push(
+            castPositionToString(copyOfCurrentState.currentPenguPosition)
+          );
         }
-        const visitedStateString = castStateToString(currentState.currentPenguPosition, copyOfCurrentState.currentPenguPosition, copyOfCurrentState.fishesCaughtWhileTraversing.length);
-        console.log(visitedStateString)
+        const visitedStateString = castStateToString(
+          currentState.currentPenguPosition,
+          copyOfCurrentState.currentPenguPosition,
+          copyOfCurrentState.fishesCaughtWhileTraversing.sort().join("")
+        );
+        console.log(copyOfCurrentState.fishesCaughtWhileTraversing.sort());
         if (!visitedStates.has(visitedStateString)) {
-          visitedStates.add(visitedStateString)
+          visitedStates.add(visitedStateString);
           queue.push(copyOfCurrentState);
         }
       }
     );
   }
   return {
-    status: isPenguKilled(currentState.currentPenguPosition) ? "KILLED" : "FAILED",
+    status: isPenguKilled(currentState.currentPenguPosition)
+      ? "KILLED"
+      : "FAILED",
     currentPenguPosition: currentState.currentPenguPosition,
     fishesCaughtWhileTraversing: currentState.fishesCaughtWhileTraversing,
     path: currentState.path
-  }
+  };
 };
 
 /**

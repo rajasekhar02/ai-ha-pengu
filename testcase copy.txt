@@ -1,10 +1,11 @@
-// victory by died
+// 1. victory by died
 15 3
 ###############
 #P * ********S#
 ###############
 
-// max 8 fishes can be collected
+// max 8 fishes can be collected 
+// 2. current code failing in this testcase
 6 7
 #######
 #P# *0#
@@ -13,11 +14,31 @@
 #***S*#
 #######
 
-// capturing all the fishes in the grid
+// 3. capturing all the fishes in the grid
 6 7
 #######
 #P# *0#
 #*0*U*#
 #0 S0##
 #***S*#
+#######
+
+// 4. for testing visiting key
+7 7
+#######
+#*#*#*#
+##   ##
+#* 0 *#
+##   ##
+#*#*#*#
+#######
+
+// 5. for testing the visiting key
+7 7
+#######
+#*#*#*#
+### ###
+#*#0#*#
+## P ##
+#*#*#*#
 #######

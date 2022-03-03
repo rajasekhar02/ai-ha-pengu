@@ -12,4 +12,4 @@ if [ -z "$defaultOutputFileName" ]; then
     defaultOutputFileName="./output.txt"
 fi
 
-"C:\Program Files\nodejs\node.exe" solution.js "$defaultInputFileName" "$defaultOutputFileName"
+node solution.js "$defaultInputFileName" "$defaultOutputFileName"
