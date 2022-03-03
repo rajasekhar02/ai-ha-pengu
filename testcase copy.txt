@@ -4,6 +4,12 @@
 #P * ********S#
 ###############
 
+// 1. victory by died
+15 3
+###############
+#P * ******S*S#
+###############
+
 // 2. max 8 fishes can be collected 
 // current code failing in this testcase
 6 7
