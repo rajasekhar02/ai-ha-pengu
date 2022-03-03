@@ -461,13 +461,13 @@ const findRouteUsingBFSFrom = function (initialState) {
       }
       continue;
     }
-    console.log(
-      currentState.fishesCaughtWhileTraversing.length,
-      "after simulation"
-    );
+    // console.log(
+    //   currentState.fishesCaughtWhileTraversing.length,
+    //   "after simulation"
+    // );
     if (currentState.fishesCaughtWhileTraversing.length >= 8) {
-      currentState.status = "VICTORY";
-      return currentState;
+      queue.push(currentState);
+      continue;
     }
     getValidPositions(currentState.currentPenguPosition).forEach(
       (eachValidMove) => {
