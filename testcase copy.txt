@@ -4,13 +4,15 @@
 #P * ********S#
 ###############
 
-// 1. victory by died
+// 2. victory by died
 15 3
 ###############
 #P * ******S*S#
 ###############
 
-// 2. max 8 fishes can be collected 
+
+
+// 3. max 8 fishes can be collected 
 // current code failing in this testcase
 6 7
 #######
@@ -20,7 +22,7 @@
 #***S*#
 #######
 
-// 3. capturing all the fishes in the grid
+// 4. capturing all the fishes in the grid
 6 7
 #######
 #P# *0#
@@ -29,7 +31,7 @@
 #***S*#
 #######
 
-// 4. for testing visiting key
+// 5. for testing visiting key
 7 7
 #######
 #*#*#*#
@@ -39,7 +41,7 @@
 #*#*#*#
 #######
 
-// 5. for testing the visiting key and failing case
+// 6. for testing the visiting key and failing case
 7 7
 #######
 #*#*#*#
@@ -48,3 +50,9 @@
 ## P ##
 #*#*#*#
 #######
+
+// checking the condition to collect fishes in the opposite directions
+15 3
+###############
+#* P ****** * #
+###############
