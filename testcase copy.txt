@@ -4,8 +4,8 @@
 #P * ********S#
 ###############
 
-// max 8 fishes can be collected 
-// 2. current code failing in this testcase
+// 2. max 8 fishes can be collected 
+// current code failing in this testcase
 6 7
 #######
 #P# *0#
