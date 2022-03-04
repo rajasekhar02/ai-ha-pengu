@@ -4,7 +4,7 @@ const fs = require("fs").promises;
 
 // #region Common Functions
 const disableLogInFunctions = ["noteThePosition"];
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 var getType = function (obj) {
   return {}.toString
     .call(obj)
@@ -378,11 +378,11 @@ const simulateTraversingInTheSameDirection = function (currentState) {
   //   'wall'
   let tempPosition = currentPenguPosition;
   let tempFishesCaughtWhileTraversing = [...fishesCaughtWhileTraversing];
-  console.log(tempPosition);
+  // console.log(tempPosition);
   let conditionThatStoppedSimulation = conditionToStopSimulation
     .map((x) => x(tempPosition))
     .indexOf(true);
-  console.log(conditionThatStoppedSimulation, currentMovingDirectionIndex);
+  // console.log(conditionThatStoppedSimulation, currentMovingDirectionIndex);
   while (conditionThatStoppedSimulation === -1) {
     if (
       doesPositionHasGivenItem(tempPosition, "fish") &&
@@ -431,13 +431,11 @@ const findRouteUsingBFSFrom = function (initialState) {
   const visitedStates = new Set();
   while (queue.length > 0) {
     currentState = queue.shift();
-    const currentMovingDirectionIndex =
-      currentState.path[currentState.path.length - 1];
-    console.log(
-      JSON.stringify(currentState),
-      currentState.fishesCaughtWhileTraversing.length,
-      " state from queue"
-    );
+    // console.log(
+    //   JSON.stringify(currentState),
+    //   currentState.fishesCaughtWhileTraversing.length,
+    //   " state from queue"
+    // );
     if (currentState.fishesCaughtWhileTraversing.length >= 8) {
       currentState.status = "VICTORY";
       return currentState;
@@ -446,13 +444,13 @@ const findRouteUsingBFSFrom = function (initialState) {
       currentState.path.length > 0 &&
       [" ", "*"].includes(
         grid[currentState.currentPenguPosition[0]][
-          currentState.currentPenguPosition[1]
+        currentState.currentPenguPosition[1]
         ]
       )
     ) {
-      console.log(JSON.stringify(currentState), " before");
+      //  console.log(JSON.stringify(currentState), " before");
       currentState = simulateTraversingInTheSameDirection(currentState);
-      console.log(JSON.stringify(currentState), " after");
+      //  console.log(JSON.stringify(currentState), " after");
     }
     if (isPenguKilled(currentState.currentPenguPosition)) {
       if (currentState.fishesCaughtWhileTraversing.length >= 8) {
@@ -474,25 +472,12 @@ const findRouteUsingBFSFrom = function (initialState) {
         const copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
         copyOfCurrentState.path.push(eachValidMove.direction);
-        // if (
-        //   doesPositionHasGivenItem(
-        //     copyOfCurrentState.currentPenguPosition,
-        //     "fish"
-        //   ) &&
-        //   !copyOfCurrentState.fishesCaughtWhileTraversing.includes(
-        //     castPositionToString(copyOfCurrentState.currentPenguPosition)
-        //   )
-        // ) {
-        //   copyOfCurrentState.fishesCaughtWhileTraversing.push(
-        //     castPositionToString(copyOfCurrentState.currentPenguPosition)
-        //   );
-        // }
         const visitedStateString = castStateToString(
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
           copyOfCurrentState.fishesCaughtWhileTraversing.sort().join("")
         );
-        console.log(copyOfCurrentState.fishesCaughtWhileTraversing.sort());
+        // console.log(copyOfCurrentState.fishesCaughtWhileTraversing.sort());
         if (!visitedStates.has(visitedStateString)) {
           visitedStates.add(visitedStateString);
           queue.push(copyOfCurrentState);
@@ -567,17 +552,21 @@ const generateOutputFile = async function (outputObj) {
       .map((gridDimension) => +gridDimension);
     const gridStrings = textFileLines.slice(1);
     grid = gridStrings.map((eachStr) => eachStr.split(""));
+
     // create the grid
     extractGridPositions(gridStrings);
     grid[penguPosition[0]][penguPosition[1]] = " ";
+    console.time("bfs");
     let result = findRouteUsingBFSFrom({
       currentPenguPosition: penguPosition,
       fishesCaughtWhileTraversing: [],
       path: [],
       status: "INITIAL"
     });
+    console.timeEnd("bfs");
     // findRouteFrom(penguPosition, [], []);
     await generateOutputFile(result);
+
   } catch (err) {
     console.log("something went wrong", err);
   }
