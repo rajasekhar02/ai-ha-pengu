@@ -431,47 +431,32 @@ const findRouteUsingBFSFrom = function (initialState) {
   const visitedStates = new Set();
   while (queue.length > 0) {
     currentState = queue.shift();
-    // console.log(
-    //   JSON.stringify(currentState),
-    //   currentState.fishesCaughtWhileTraversing.length,
-    //   " state from queue"
-    // );
     if (currentState.fishesCaughtWhileTraversing.length >= 8) {
-      currentState.status = "VICTORY";
+      currentState.status = isPenguKilled(currentState.currentPenguPosition)
+        ? "KILLED"
+        : "VICTORY";
       return currentState;
     }
-    if (
-      currentState.path.length > 0 &&
-      [" ", "*"].includes(
-        grid[currentState.currentPenguPosition[0]][
-        currentState.currentPenguPosition[1]
-        ]
-      )
-    ) {
-      //  console.log(JSON.stringify(currentState), " before");
-      currentState = simulateTraversingInTheSameDirection(currentState);
-      //  console.log(JSON.stringify(currentState), " after");
-    }
     if (isPenguKilled(currentState.currentPenguPosition)) {
-      if (currentState.fishesCaughtWhileTraversing.length >= 8) {
-        currentState.status = "KILLED";
-        return currentState;
-      }
-      continue;
-    }
-    // console.log(
-    //   currentState.fishesCaughtWhileTraversing.length,
-    //   "after simulation"
-    // );
-    if (currentState.fishesCaughtWhileTraversing.length >= 8) {
-      queue.push(currentState);
       continue;
     }
     getValidPositions(currentState.currentPenguPosition).forEach(
       (eachValidMove) => {
-        const copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
+        let copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
         copyOfCurrentState.path.push(eachValidMove.direction);
+        if (
+          [" ", "*"].includes(
+            grid[copyOfCurrentState.currentPenguPosition[0]][
+              copyOfCurrentState.currentPenguPosition[1]
+            ]
+          )
+        ) {
+          //  console.log(JSON.stringify(currentState), " before");
+          copyOfCurrentState =
+            simulateTraversingInTheSameDirection(copyOfCurrentState);
+          //  console.log(JSON.stringify(currentState), " after");
+        }
         const visitedStateString = castStateToString(
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
@@ -566,7 +551,6 @@ const generateOutputFile = async function (outputObj) {
     console.timeEnd("bfs");
     // findRouteFrom(penguPosition, [], []);
     await generateOutputFile(result);
-
   } catch (err) {
     console.log("something went wrong", err);
   }
