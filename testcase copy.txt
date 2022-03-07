@@ -1,11 +1,11 @@
 // 1. victory by died
-15 3
+3 15
 ###############
 #P * ********S#
 ###############
 
 // 2. victory by died
-15 3
+3 15
 ###############
 #P * ******S*S#
 ###############
@@ -52,7 +52,7 @@
 #######
 
 // checking the condition to collect fishes in the opposite directions
-15 3
+3 15
 ###############
 #* P ****** * #
 ###############
