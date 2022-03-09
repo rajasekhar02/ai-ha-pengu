@@ -4,7 +4,7 @@
 defaultInputFileName=$1
 defaultOutputFileName=$2
 
-if [ -z "$defaultInputFileName"]; then
+if [ -z "$defaultInputFileName" ]; then
     defaultInputFileName="./testcase.txt"
 fi
 
