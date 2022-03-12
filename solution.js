@@ -370,10 +370,6 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
           copyOfCurrentState =
             simulateTraversingInTheSameDirection(copyOfCurrentState);
         }
-        // console.log(copyOfCurrentState);
-        // if (copyOfCurrentState.status === "KILLED") {
-        //   return;
-        // }
         const visitedStateString = castStateToString(
           copyOfCurrentState.path.length,
           currentState.currentPenguPosition,
