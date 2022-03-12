@@ -338,6 +338,9 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
         currentState.depth_status = "DEPTH_HAS_SOLUTION";
         return currentState;
       }
+      if (currentState.status === "KILLED") {
+        continue;
+      }
       let validPositions = getValidPositions(
         currentState.currentPenguPosition,
         currentState.path[currentState.path.length - 1]
