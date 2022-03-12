@@ -227,8 +227,13 @@ const castPositionToString = function (position) {
   return `R${position[0]}_C${position[1]}`;
 };
 
-const castStateToString = function (fromPosition, toPosition, fishesCaught) {
-  return `R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}`;
+const castStateToString = function (
+  pathLength,
+  fromPosition,
+  toPosition,
+  fishesCaught
+) {
+  return `PL${pathLength}_R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}`;
 };
 
 /**
@@ -362,11 +367,12 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
           copyOfCurrentState =
             simulateTraversingInTheSameDirection(copyOfCurrentState);
         }
-        console.log(copyOfCurrentState);
+        // console.log(copyOfCurrentState);
         if (copyOfCurrentState.status === "KILLED") {
           return;
         }
         const visitedStateString = castStateToString(
+          copyOfCurrentState.path.length,
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
           copyOfCurrentState.fishesCaughtWhileTraversing.sort().join("")
@@ -381,7 +387,7 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
   currentState.depth_status = limit_hit
     ? "DEPTH_LIMIT_REACHED"
     : "NO_PLANS_EXISTS";
-  console.log(currentState);
+  // console.log(currentState);
   return currentState;
 };
 
