@@ -346,6 +346,9 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
         limit_hit = true;
       }
     } else {
+      if (currentState.status === "KILLED") {
+        continue;
+      }
       let validPositions = getValidPositions(currentState.currentPenguPosition);
       // currentState.path[currentState.path.length - 1]
       validPositions.forEach((eachValidMove) => {
@@ -368,9 +371,9 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
             simulateTraversingInTheSameDirection(copyOfCurrentState);
         }
         // console.log(copyOfCurrentState);
-        if (copyOfCurrentState.status === "KILLED") {
-          return;
-        }
+        // if (copyOfCurrentState.status === "KILLED") {
+        //   return;
+        // }
         const visitedStateString = castStateToString(
           copyOfCurrentState.path.length,
           currentState.currentPenguPosition,
