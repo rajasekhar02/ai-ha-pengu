@@ -321,6 +321,16 @@ const goalFunction = function (currentState) {
   return currentState.fishesCaughtWhileTraversing.length >= 20;
 };
 
+const cloneState = function (state) {
+  return {
+    currentPenguPosition: state.currentPenguPosition,
+    fishesCaughtWhileTraversing: [...state.fishesCaughtWhileTraversing],
+    path: [...state.path],
+    status: state.status,
+    depth_status: state.depth_status
+  };
+};
+
 const boundedDFS = function (initialState, goalFunction, maxPathLength) {
   let limit_hit = false;
   let stack = [initialState];
@@ -366,7 +376,9 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
       let validPositions = getValidPositions(currentState.currentPenguPosition);
       // currentState.path[currentState.path.length - 1]
       validPositions.forEach((eachValidMove) => {
-        let copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
+        // console.time("parsing");
+        let copyOfCurrentState = cloneState(currentState); //JSON.parse(JSON.stringify(currentState));
+        // console.timeEnd("parsing");
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
         // console.log(eachValidMove);
         copyOfCurrentState.path.push(eachValidMove.direction);
@@ -403,7 +415,7 @@ const findRouteUsingIDDFS = function (initialState, goalFunction) {
       return res;
     }
     depth++;
-    console.log(depth);
+    // console.log(depth);
   } while (res.depth_status !== "NO_PLANS_EXISTS");
   return res;
 };
