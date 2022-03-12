@@ -227,6 +227,16 @@ const castPositionToString = function (position) {
   return `R${position[0]}_C${position[1]}`;
 };
 
+/**
+ * Casts the given state items into a string
+ *
+ * @param {number} pathLength it is an number containing the length of the path
+ * @param {Array<number>} fromPosition it is an array of length 2 containing [rowPosition, columnPosition]
+ * @param {Array<number>} toPosition it is an array of length 2 containing [rowPosition, columnPosition]
+ * @param {Array<number>} fishesCaught it is an array of positions containing [rowPosition, columnPosition] of the fishes caught
+ * @returns {string} it of the form R<row number>_C<column number>
+ *
+ */
 const castStateToString = function (
   pathLength,
   fromPosition,
@@ -243,7 +253,9 @@ const castStateToString = function (
  * 2. when pengu reaches the snow cell
  * 3. when pengu is struck by the wall
  *
- * @param {Object< string, Array<string>, Array<number>, Array<number> >}
+ * @param {Object< string, Array<string>, Array<number>, Array<number> >} currentState represents the current state of the pengu game
+ *
+ * @return {Object< string, string, Array<string>, Array<number>, Array<number>>} represents the final state after sliding
  */
 const simulateTraversingInTheSameDirection = function (currentState) {
   const { currentPenguPosition, fishesCaughtWhileTraversing, path } =
@@ -302,6 +314,13 @@ const simulateTraversingInTheSameDirection = function (currentState) {
   };
 };
 
+/**
+ * Determines the status of the pengu using the current pengu position and direction
+ *
+ * @param {Array<number>} position current pengu position in the grid
+ * @param {number} direction it is required for validating the wall
+ * @returns {String} represent current status of the pengu
+ */
 const getStatusByPenguPosition = function (position, direction) {
   const statusConditions = [
     (position) => isPenguKilled(position),
@@ -316,11 +335,26 @@ const getStatusByPenguPosition = function (position, direction) {
   return status[passedConditionIndex];
 };
 
+/**
+ * Contains the implementation of the goal condition which is useful for determining the goal status
+ *
+ * @param {Object<Array<number>, Array<Array<number>>, Array<number>, String, String>} currentState represent the current state of the pengu game
+ * @returns {boolean} if true: goal conditions are met
+ *                    else: goal condition is not met
+ */
 const goalFunction = function (currentState) {
   // fishPositions.length < 20 ||
   return currentState.fishesCaughtWhileTraversing.length >= 20;
 };
 
+/**
+ * Contains the implementation of the bounded depth firsh search algorithm for pengu game
+ *
+ * @param {Object<Array<number>, Array<Array<number>>, Array<number>, String, String>} initialState represents the starting state of the pengu game
+ * @param {Function} goalFunction represent the function to determine whether the goal is reached or not
+ * @param {number} maxPathLength represent the final Path Length at which goal condition need to be checked
+ * @returns {Object<Array<number>, Array<Array<number>>, Array<number>, String, String>} Final State containing the status, depth_status,
+ */
 const boundedDFS = function (initialState, goalFunction, maxPathLength) {
   let limit_hit = false;
   let stack = [initialState];
@@ -393,6 +427,13 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
   return currentState;
 };
 
+/**
+ * Contains the implementation of the Iterative Deepening Depth First Search
+ *
+ * @param {Object<Array<number>, Array<Array<number>>, Array<number>, String, String>} initialState represents the starting state of the pengu game
+ * @param {Function} goalFunction represent the function to determine whether the goal is reached or not
+ * @returns  {Object<Array<number>, Array<Array<number>>, Array<number>, String, String>} Final State containing the status, depth_status,
+ */
 const findRouteUsingIDDFS = function (initialState, goalFunction) {
   let depth = 1;
   let res = undefined;
@@ -402,7 +443,7 @@ const findRouteUsingIDDFS = function (initialState, goalFunction) {
       return res;
     }
     depth++;
-    console.log(depth);
+    // console.log(depth);
   } while (res.depth_status !== "NO_PLANS_EXISTS");
   return res;
 };
