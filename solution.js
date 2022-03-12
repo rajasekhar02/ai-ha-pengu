@@ -329,6 +329,17 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
   while (stack.length > 0) {
     currentState = stack.pop();
     // console.log(currentState, maxPathLength);
+    if (
+      currentState.path.length > 0 &&
+      [" ", "*"].includes(
+        grid[currentState.currentPenguPosition[0]][
+          currentState.currentPenguPosition[1]
+        ]
+      )
+    ) {
+      currentState = simulateTraversingInTheSameDirection(currentState);
+      // if (maxPathLength > 13) console.log(currentState);
+    }
     if (currentState.path.length === maxPathLength) {
       if (goalFunction(currentState)) {
         currentState.status = getStatusByPenguPosition(
@@ -363,16 +374,6 @@ const boundedDFS = function (initialState, goalFunction, maxPathLength) {
           copyOfCurrentState.currentPenguPosition,
           copyOfCurrentState.path[copyOfCurrentState.path.length - 1]
         );
-        if (
-          [" ", "*"].includes(
-            grid[copyOfCurrentState.currentPenguPosition[0]][
-              copyOfCurrentState.currentPenguPosition[1]
-            ]
-          )
-        ) {
-          copyOfCurrentState =
-            simulateTraversingInTheSameDirection(copyOfCurrentState);
-        }
         const visitedStateString = castStateToString(
           copyOfCurrentState.path.length,
           currentState.currentPenguPosition,
