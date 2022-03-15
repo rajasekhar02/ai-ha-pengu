@@ -1,10 +1,11 @@
 // #region imports
+const PriorityQueue = require("./PriorityQueue");
 const fs = require("fs").promises;
 // #endregion imports
 
 // #region Common Functions
 const disableLogInFunctions = ["noteThePosition"];
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 var getType = function (obj) {
   return {}.toString
     .call(obj)
@@ -25,11 +26,6 @@ const printLog = function () {
       })
       .join("\n")
   );
-};
-const getRandomIndex = function (min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1) + min); //The maximum is inclusive and the minimum is inclusive
 };
 // #endregion Common Functions
 
@@ -86,6 +82,7 @@ const directionNames = [
   "top",
   "top-right"
 ];
+let FISHES_TO_REACH_GOAL = 20
 // #endregion variables
 
 // #region helper functions
@@ -140,11 +137,7 @@ const extractGridPositions = function (gridStrings) {
  */
 
 const doesPositionHasGivenItem = function (position, item) {
-  const truthValue = symbolToPositionsArray[item].some((eachItemPosition) => {
-    return (
-      eachItemPosition[0] === position[0] && eachItemPosition[1] === position[1]
-    );
-  });
+  const truthValue = symbolToName[grid[position[0]][position[1]]] === item;
   return truthValue;
 };
 
@@ -259,98 +252,6 @@ const castPositionToString = function (position) {
 const castStateToString = function (fromPosition, toPosition, fishesCaught) {
   return `R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}`;
 };
-/**
- * Recursively traverses the grid by using the current pengu position. It stores the fishes caught in the fishesCaughtWhileTraversing array
- * and directions used while traversing in the path array
- *
- * @param {Array<number>} currentPenguPosition it is an array of length 2 containing [rowPosition, columnPosition]
- * @param {Array<number>} path it is an array of numbers represents the index of the direction array
- * @param {Array<string>} fishesCaughtWhileTraversing it is an array of positions casted to strings representing the fishes caught by the pengu while traversing
- * @returns {Object< boolean, Array<string>,Array<number>, Array<number> >} Object containing the statusof the game,
- * fishes caught while traversing, direction visited as path, current pengu location
- */
-const findRouteFrom = function (
-  currentPenguPosition,
-  path,
-  fishesCaughtWhileTraversing
-) {
-  const currentMovingDirectionIndex = path[path.length - 1];
-  const conditionsToCallGetValidMoves = [
-    () => path.length === 0,
-    (position) => doesPositionHasGivenItem(position, "snow"),
-    (position) =>
-      !isItPossibleToMoveFurtherInSameDirection(
-        position,
-        currentMovingDirectionIndex
-      )
-  ];
-  const returnObjectFunc = (status, penguPosition, finalPath) => {
-    return {
-      status,
-      fishesCaughtWhileTraversing,
-      path: finalPath,
-      currentPenguPosition: penguPosition
-    };
-  };
-  const canSelectNewMoves = conditionsToCallGetValidMoves.some((x) =>
-    x(currentPenguPosition)
-  );
-  // Bear or Shark killed the pengu
-  if (isPenguKilled(currentPenguPosition)) {
-    return returnObjectFunc("KILLED", currentPenguPosition, path);
-  }
-  // eat the fish if the position has any
-  if (
-    doesPositionHasGivenItem(currentPenguPosition, "fish") &&
-    !fishesCaughtWhileTraversing.includes(
-      castPositionToString(currentPenguPosition)
-    )
-  ) {
-    fishesCaughtWhileTraversing.push(
-      castPositionToString(currentPenguPosition)
-    );
-  }
-  // if all the fishes in the grid are eaten then victory
-  if (
-    fishesCaughtWhileTraversing.length === fishPositions.length &&
-    canSelectNewMoves
-  ) {
-    return returnObjectFunc("VICTORY", currentPenguPosition, path);
-  }
-  // stop traversing over the grid when pengu completed 6 moves and has a chance to select the next move
-  if (path.length >= 6 && canSelectNewMoves) {
-    return returnObjectFunc("GAME_OVER", currentPenguPosition, path);
-  }
-  // Triggers when pengu reaches the snow cell or stopped by hitting the wall or at the start of the traversal
-  if (canSelectNewMoves) {
-    const validMoves = getValidPositions(currentPenguPosition);
-    let randomDirection = getRandomIndex(0, validMoves.length - 1);
-    let eachMove = validMoves[randomDirection].position;
-    let eachDirection = validMoves[randomDirection].direction;
-    if (isPenguKilled(eachMove)) {
-      return returnObjectFunc("KILLED", eachMove, [...path, eachDirection]);
-    }
-    let routeStatus = findRouteFrom(
-      eachMove,
-      [...path, eachDirection],
-      fishesCaughtWhileTraversing
-    );
-    return routeStatus;
-  }
-  const futherMove = getNewPosition(
-    currentPenguPosition,
-    currentMovingDirectionIndex
-  );
-  if (!checkAMoveIsInvalid(futherMove)) {
-    const routeStatus = findRouteFrom(
-      futherMove,
-      path,
-      fishesCaughtWhileTraversing
-    );
-    return routeStatus;
-  }
-  return returnObjectFunc("END", currentPenguPosition, path);
-};
 
 /**
  *
@@ -418,6 +319,27 @@ const simulateTraversingInTheSameDirection = function (currentState) {
   };
 };
 
+const heuristicFunction = function (state1, state2) {
+  // console.log(state1, state2);
+  // const diffFishesLength = state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length;
+  // if (diffFishesLength === 0) {
+  //   return isPenguKilled(state1.currentPenguPosition) ? true : isPenguKilled(state2.currentPenguPosition)
+  // }
+  // return state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length
+  // return false
+  if (isPenguKilled(state1.currentPenguPosition) && state1.fishesCaughtWhileTraversing.length < 20) {
+    return false;
+  }
+  if (isPenguKilled(state2.currentPenguPosition) && state2.fishesCaughtWhileTraversing.length < 20) {
+    return true;
+  }
+  if (state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length !== 0) {
+    return state1.fishesCaughtWhileTraversing.length > state2.fishesCaughtWhileTraversing.length
+  }
+  // return false;
+
+  return state1.path.length > state2.path.length
+}
 /**
  *
  * Contains the implementation of the breadth first search over the game
@@ -426,65 +348,50 @@ const simulateTraversingInTheSameDirection = function (currentState) {
  * fishes caught while traversing, direction visited as path, current pengu location
  */
 const findRouteUsingBFSFrom = function (initialState) {
-  const queue = [initialState];
+  const priorityQueue = new PriorityQueue(heuristicFunction);
+  priorityQueue.push(initialState);
   let currentState;
   const visitedStates = new Set();
-  while (queue.length > 0) {
-    currentState = queue.shift();
-    // console.log(
-    //   JSON.stringify(currentState),
-    //   currentState.fishesCaughtWhileTraversing.length,
-    //   " state from queue"
-    // );
-    if (currentState.fishesCaughtWhileTraversing.length >= 8) {
-      currentState.status = "VICTORY";
+  while (!priorityQueue.isEmpty()) {
+    currentState = priorityQueue.pop();
+    console.log("popped-item", currentState)
+    if (currentState.fishesCaughtWhileTraversing.length >= FISHES_TO_REACH_GOAL) {
+      currentState.status = isPenguKilled(currentState.currentPenguPosition)
+        ? "KILLED" : "VICTORY";
       return currentState;
     }
-    if (
-      currentState.path.length > 0 &&
-      [" ", "*"].includes(
-        grid[currentState.currentPenguPosition[0]][
-        currentState.currentPenguPosition[1]
-        ]
-      )
-    ) {
-      //  console.log(JSON.stringify(currentState), " before");
-      currentState = simulateTraversingInTheSameDirection(currentState);
-      //  console.log(JSON.stringify(currentState), " after");
-    }
     if (isPenguKilled(currentState.currentPenguPosition)) {
-      if (currentState.fishesCaughtWhileTraversing.length >= 8) {
-        currentState.status = "KILLED";
-        return currentState;
-      }
       continue;
     }
-    // console.log(
-    //   currentState.fishesCaughtWhileTraversing.length,
-    //   "after simulation"
-    // );
-    if (currentState.fishesCaughtWhileTraversing.length >= 8) {
-      queue.push(currentState);
-      continue;
-    }
-    getValidPositions(currentState.currentPenguPosition).forEach(
+    getValidPositions(currentState.currentPenguPosition, currentState.path[currentState.path.length - 1]).forEach(
       (eachValidMove) => {
-        const copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
+        let copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
         copyOfCurrentState.path.push(eachValidMove.direction);
+        if (
+          [" ", "*"].includes(
+            grid[currentState.currentPenguPosition[0]][
+            currentState.currentPenguPosition[1]
+            ]
+          )
+        ) {
+          copyOfCurrentState = simulateTraversingInTheSameDirection(copyOfCurrentState);
+        }
         const visitedStateString = castStateToString(
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
-          copyOfCurrentState.fishesCaughtWhileTraversing.sort().join("")
+          copyOfCurrentState.fishesCaughtWhileTraversing.sort().join(""),
         );
         // console.log(copyOfCurrentState.fishesCaughtWhileTraversing.sort());
         if (!visitedStates.has(visitedStateString)) {
-          visitedStates.add(visitedStateString);
-          queue.push(copyOfCurrentState);
+          // visitedStates.add(visitedStateString);
+          priorityQueue.push(copyOfCurrentState);
+          // console.log(priorityQueue)
         }
       }
     );
   }
+
   return {
     status: isPenguKilled(currentState.currentPenguPosition)
       ? "KILLED"
@@ -505,6 +412,7 @@ const generateOutputFile = async function (outputObj) {
   try {
     const { status, path, fishesCaughtWhileTraversing, currentPenguPosition } =
       outputObj;
+    printLog(`Path length:${path.length}`)
     const updatedGrid = grid
       .map((row, indexRow) => {
         return row
