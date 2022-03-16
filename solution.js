@@ -5,7 +5,7 @@ const fs = require("fs").promises;
 
 // #region Common Functions
 const disableLogInFunctions = ["noteThePosition"];
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 var getType = function (obj) {
   return {}.toString
     .call(obj)
@@ -275,15 +275,13 @@ const simulateTraversingInTheSameDirection = function (currentState) {
         "wall"
       )
   ];
-  // getNewPosition(position, currentMovingDirectionIndex),
-  //   'wall'
+
   let tempPosition = currentPenguPosition;
   let tempFishesCaughtWhileTraversing = [...fishesCaughtWhileTraversing];
-  // console.log(tempPosition);
+
   let conditionThatStoppedSimulation = conditionToStopSimulation
     .map((x) => x(tempPosition))
     .indexOf(true);
-  // console.log(conditionThatStoppedSimulation, currentMovingDirectionIndex);
   while (conditionThatStoppedSimulation === -1) {
     if (
       doesPositionHasGivenItem(tempPosition, "fish") &&
@@ -320,14 +318,22 @@ const simulateTraversingInTheSameDirection = function (currentState) {
   };
 };
 
+/**
+ * Contains the implementation of the heuristic function
+ * following heuristics are considered:
+ *  1. Pengu in the state1 killed without reaching the goal of catching 20 fishes then state2 is considered as valid state for expansion.
+ *  2. Pengu in the state2 killed without reaching the goal of catching 20 fishes then state1 is considered as valid state for expansion.
+ * if function is not returned from step1 and step2 then Pengu should be alive, so we check the below conditions:
+ *  1. Check whether is a difference between number of fishes eaten in state1 and state2 then return true if state1 has more fishes than state2 else return false
+ *  2. if both state1 and state2 has same number of fishes then if state1 status is ON_SNOW then return true
+ *  3. if both state1 and state2 has same number of fishes, state1 status is not equal ON_SNOW then if state2 status is ON_SNOW then return true
+ *  4. if there state1 and state2 are similar then consider the lengths of the path for state1 and state2, return true if state1 has shorter path else false which mean state2 has shorter path
+ * @param {Object< string, Array<string>, Array<number>, Array<number> >} state1 containing the status of the game
+ * @param {Object< string, Array<string>, Array<number>, Array<number> >} state2 containing the status of the game
+ * @returns boolean based on the above heuristics
+ */
+
 const heuristicFunction = function (state1, state2) {
-  // console.log(state1, state2);
-  // const diffFishesLength = state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length;
-  // if (diffFishesLength === 0) {
-  //   return isPenguKilled(state1.currentPenguPosition) ? true : isPenguKilled(state2.currentPenguPosition)
-  // }
-  // return state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length
-  // return false
   if (isPenguKilled(state1.currentPenguPosition) && state1.fishesCaughtWhileTraversing.length < 20) {
     return false;
   }
@@ -345,37 +351,23 @@ const heuristicFunction = function (state1, state2) {
     return false
   }
 
-  // if (state1.path.length - state2.path.length !== 0) {
-  //   return state1.path.length < state2.path.length
-  // }
-
-  // if (state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length !== 0) {
-  // return state1.fishesCaughtWhileTraversing.length > state2.fishesCaughtWhileTraversing.length ? (state1.path.length < state2.path.length ? false : true) : (state2.path.length < state1.path.length ? false : true)
-  // }
-  // const [distanceOfPrevToCurrInState1, distanceOfPrevToCurrInState2] = [state1, state2].map(eachState => {
-  //   return Math.hypot(eachState.currentPenguPosition[0] - eachState.prevPenguPosition[0], eachState.currentPenguPosition[1] - eachState.prevPenguPosition[1])
-  // })
-  // printLog(distanceOfPrevToCurrInState1, distanceOfPrevToCurrInState2);
-  // if (distanceOfPrevToCurrInState1 - distanceOfPrevToCurrInState2 <= 0) {
-  //   return distanceOfPrevToCurrInState1 - distanceOfPrevToCurrInState2 > 2
-  // }
   return state1.path.length < state2.path.length
 }
 /**
  *
- * Contains the implementation of the breadth first search over the game
+ * Contains the implementation of the best first search over the game
  *
- * @param {Object< string, Array<string>, Array<number>, Array<number> >} Object containing the statusof the game,
+ * @param {Object< string, Array<string>, Array<number>, Array<number> >} initialState containing the status of the game,
  * fishes caught while traversing, direction visited as path, current pengu location
  */
-const findRouteUsingBFSFrom = function (initialState) {
+const findRouteUsingBestFSFrom = function (initialState) {
   const priorityQueue = new PriorityQueue(heuristicFunction);
   priorityQueue.push(initialState);
   let currentState;
   const visitedStates = new Set();
   while (!priorityQueue.isEmpty()) {
     currentState = priorityQueue.pop();
-    console.log("popped-item", currentState)
+    printLog(`popped-item:${currentState}`)
     if (currentState.fishesCaughtWhileTraversing.length >= FISHES_TO_REACH_GOAL) {
       currentState.status = isPenguKilled(currentState.currentPenguPosition)
         ? "KILLED" : "VICTORY";
@@ -398,7 +390,6 @@ const findRouteUsingBFSFrom = function (initialState) {
           )
         ) {
           copyOfCurrentState = simulateTraversingInTheSameDirection(copyOfCurrentState);
-          // printLog(copyOfCurrentState)
         }
         const visitedStateString = castStateToString(
           currentState.currentPenguPosition,
@@ -406,11 +397,9 @@ const findRouteUsingBFSFrom = function (initialState) {
           copyOfCurrentState.fishesCaughtWhileTraversing.sort().join(""),
 
         );
-        // console.log(copyOfCurrentState.fishesCaughtWhileTraversing.sort());
         if (!visitedStates.has(visitedStateString)) {
-          // visitedStates.add(visitedStateString);
+          visitedStates.add(visitedStateString);
           priorityQueue.push(copyOfCurrentState);
-          // console.log(priorityQueue)
         }
       }
     );
@@ -488,15 +477,15 @@ const generateOutputFile = async function (outputObj) {
     // create the grid
     extractGridPositions(gridStrings);
     grid[penguPosition[0]][penguPosition[1]] = " ";
-    console.time("bfs");
-    let result = findRouteUsingBFSFrom({
+    console.time("Best-First-Search");
+    let result = findRouteUsingBestFSFrom({
       currentPenguPosition: penguPosition,
       prevPenguPosition: penguPosition,
       fishesCaughtWhileTraversing: [],
       path: [],
       status: "INITIAL"
     });
-    console.timeEnd("bfs");
+    console.timeEnd("Best-First-Search");
     // findRouteFrom(penguPosition, [], []);
     await generateOutputFile(result);
 
