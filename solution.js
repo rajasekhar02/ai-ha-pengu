@@ -334,10 +334,16 @@ const heuristicFunction = function (state1, state2) {
   if (isPenguKilled(state2.currentPenguPosition) && state2.fishesCaughtWhileTraversing.length < 20) {
     return true;
   }
+
   if (state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length !== 0) {
     return state1.fishesCaughtWhileTraversing.length > state2.fishesCaughtWhileTraversing.length;
   }
-
+  if (state1.status === "ON_SNOW") {
+    return true;
+  }
+  if (state2.status === "ON_SNOW") {
+    return false
+  }
 
   // if (state1.path.length - state2.path.length !== 0) {
   //   return state1.path.length < state2.path.length
@@ -353,8 +359,7 @@ const heuristicFunction = function (state1, state2) {
   // if (distanceOfPrevToCurrInState1 - distanceOfPrevToCurrInState2 <= 0) {
   //   return distanceOfPrevToCurrInState1 - distanceOfPrevToCurrInState2 > 2
   // }
-
-  return state1.status === "STRUCK_BY_WALL" || state2.status === "STRUCK_BY_WALL"
+  return state1.path.length < state2.path.length
 }
 /**
  *
@@ -387,12 +392,13 @@ const findRouteUsingBFSFrom = function (initialState) {
         copyOfCurrentState.path.push(eachValidMove.direction);
         if (
           [" ", "*"].includes(
-            grid[currentState.currentPenguPosition[0]][
-            currentState.currentPenguPosition[1]
+            grid[copyOfCurrentState.currentPenguPosition[0]][
+            copyOfCurrentState.currentPenguPosition[1]
             ]
           )
         ) {
           copyOfCurrentState = simulateTraversingInTheSameDirection(copyOfCurrentState);
+          // printLog(copyOfCurrentState)
         }
         const visitedStateString = castStateToString(
           currentState.currentPenguPosition,
