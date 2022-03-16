@@ -313,6 +313,7 @@ const simulateTraversingInTheSameDirection = function (currentState) {
   ];
   return {
     status: conditionToStopSimulationMapStatus[conditionThatStoppedSimulation],
+    prevPenguPosition: currentState.prevPenguPosition,
     fishesCaughtWhileTraversing: tempFishesCaughtWhileTraversing,
     currentPenguPosition: tempPosition,
     path
@@ -334,11 +335,17 @@ const heuristicFunction = function (state1, state2) {
     return true;
   }
   if (state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length !== 0) {
-    return state1.fishesCaughtWhileTraversing.length > state2.fishesCaughtWhileTraversing.length
+    return state1.fishesCaughtWhileTraversing.length < state2.fishesCaughtWhileTraversing.length
   }
-  // return false;
-
-  return state1.path.length > state2.path.length
+  if (state1.path.length - state2.path.length !== 0) {
+    return state1.path.length < state2.path.length
+  }
+  const [distanceOfPrevToCurrInState1, distanceOfPrevToCurrInState2] = [state1, state2].map(eachState => {
+    return Math.hypot(eachState.currentPenguPosition[0] - eachState.prevPenguPosition[0], eachState.currentPenguPosition[1] - eachState.prevPenguPosition[1])
+  })
+  printLog(distanceOfPrevToCurrInState1, distanceOfPrevToCurrInState2);
+  return distanceOfPrevToCurrInState1 - distanceOfPrevToCurrInState2 > 2;
+  // return state1.path.length > state2.path.length;
 }
 /**
  *
@@ -367,6 +374,7 @@ const findRouteUsingBFSFrom = function (initialState) {
       (eachValidMove) => {
         let copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
+        copyOfCurrentState.prevPenguPosition = currentState.currentPenguPosition;
         copyOfCurrentState.path.push(eachValidMove.direction);
         if (
           [" ", "*"].includes(
@@ -381,6 +389,7 @@ const findRouteUsingBFSFrom = function (initialState) {
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
           copyOfCurrentState.fishesCaughtWhileTraversing.sort().join(""),
+
         );
         // console.log(copyOfCurrentState.fishesCaughtWhileTraversing.sort());
         if (!visitedStates.has(visitedStateString)) {
@@ -467,6 +476,7 @@ const generateOutputFile = async function (outputObj) {
     console.time("bfs");
     let result = findRouteUsingBFSFrom({
       currentPenguPosition: penguPosition,
+      prevPenguPosition: penguPosition,
       fishesCaughtWhileTraversing: [],
       path: [],
       status: "INITIAL"
