@@ -229,7 +229,6 @@ const castPositionToString = function (position) {
 /**
  * Casts the given state items into a string
  *
- * @param {number} pathLength it is an number containing the length of the path
  * @param {Array<number>} fromPosition it is an array of length 2 containing [rowPosition, columnPosition]
  * @param {Array<number>} toPosition it is an array of length 2 containing [rowPosition, columnPosition]
  * @param {Array<number>} fishesCaught it is an array of positions containing [rowPosition, columnPosition] of the fishes caught
