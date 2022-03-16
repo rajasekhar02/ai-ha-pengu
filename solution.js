@@ -239,15 +239,20 @@ const isItPossibleToMoveFurtherInSameDirection = function (
 };
 
 /**
- * Casts the given position into a string
+ * Casts the given state items into a string
  *
- * @param {Array<number>} position it is an array of length 2 containing [rowPosition, columnPosition]
- * @returns {string} it of the form R<row number>_C<column number>
+ * @param {number} pathLength it is an number containing the length of the path
+ * @param {Array<number>} fromPosition it is an array of length 2 containing [rowPosition, columnPosition]
+ * @param {Array<number>} toPosition it is an array of length 2 containing [rowPosition, columnPosition]
+ * @param {Array<number>} fishesCaught it is an array of positions containing [rowPosition, columnPosition] of the fishes caught
+ * @returns {string} it of the form R<row number>_C<column number>_R<row number>_C<column number>_F<fishesCaught>
  *
  */
+
 const castPositionToString = function (position) {
   return `R${position[0]}_C${position[1]}`;
 };
+
 
 const castStateToString = function (fromPosition, toPosition, fishesCaught) {
   return `R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}`;
