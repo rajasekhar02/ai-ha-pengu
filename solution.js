@@ -335,17 +335,26 @@ const heuristicFunction = function (state1, state2) {
     return true;
   }
   if (state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length !== 0) {
-    return state1.fishesCaughtWhileTraversing.length < state2.fishesCaughtWhileTraversing.length
+    return state1.fishesCaughtWhileTraversing.length > state2.fishesCaughtWhileTraversing.length;
   }
-  if (state1.path.length - state2.path.length !== 0) {
-    return state1.path.length < state2.path.length
-  }
-  const [distanceOfPrevToCurrInState1, distanceOfPrevToCurrInState2] = [state1, state2].map(eachState => {
-    return Math.hypot(eachState.currentPenguPosition[0] - eachState.prevPenguPosition[0], eachState.currentPenguPosition[1] - eachState.prevPenguPosition[1])
-  })
-  printLog(distanceOfPrevToCurrInState1, distanceOfPrevToCurrInState2);
-  return distanceOfPrevToCurrInState1 - distanceOfPrevToCurrInState2 > 2;
-  // return state1.path.length > state2.path.length;
+
+
+  // if (state1.path.length - state2.path.length !== 0) {
+  //   return state1.path.length < state2.path.length
+  // }
+
+  // if (state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length !== 0) {
+  // return state1.fishesCaughtWhileTraversing.length > state2.fishesCaughtWhileTraversing.length ? (state1.path.length < state2.path.length ? false : true) : (state2.path.length < state1.path.length ? false : true)
+  // }
+  // const [distanceOfPrevToCurrInState1, distanceOfPrevToCurrInState2] = [state1, state2].map(eachState => {
+  //   return Math.hypot(eachState.currentPenguPosition[0] - eachState.prevPenguPosition[0], eachState.currentPenguPosition[1] - eachState.prevPenguPosition[1])
+  // })
+  // printLog(distanceOfPrevToCurrInState1, distanceOfPrevToCurrInState2);
+  // if (distanceOfPrevToCurrInState1 - distanceOfPrevToCurrInState2 <= 0) {
+  //   return distanceOfPrevToCurrInState1 - distanceOfPrevToCurrInState2 > 2
+  // }
+
+  return state1.status === "STRUCK_BY_WALL" || state2.status === "STRUCK_BY_WALL"
 }
 /**
  *
@@ -370,7 +379,7 @@ const findRouteUsingBFSFrom = function (initialState) {
     if (isPenguKilled(currentState.currentPenguPosition)) {
       continue;
     }
-    getValidPositions(currentState.currentPenguPosition, currentState.path[currentState.path.length - 1]).forEach(
+    getValidPositions(currentState.currentPenguPosition).forEach(
       (eachValidMove) => {
         let copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
