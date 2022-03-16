@@ -214,29 +214,17 @@ const getValidPositions = function (currentPosition, direction) {
 };
 
 /**
- * Checks whether it is possible to move futher in same direction based on the given currentPenguPosition and direction
+ * Casts the given position into a string
  *
- * @param {Array<number>} currentPenguPosition it is an array of length 2 containing [rowPosition, columnPosition]
- * @param {number} direction it is a number represents the index of the direction array
- * @returns {boolean} if newMove from the currentPenguPosition and direction is not having a wall then it returns false
- *                    else true
+ * @param {Array<number>} position it is an array of length 2 containing [rowPosition, columnPosition]
+ * @returns {string} it of the form R<row number>_C<column number>
+ *
  */
-const isItPossibleToMoveFurtherInSameDirection = function (
-  currentPenguPosition,
-  direction
-) {
-  if (
-    [" ", "*"].includes(grid[currentPenguPosition[0]][currentPenguPosition[1]])
-  ) {
-    const newMove = getNewPosition(currentPenguPosition, direction);
-    if (doesPositionHasGivenItem(newMove, "wall")) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-  return false;
+
+const castPositionToString = function (position) {
+  return `R${position[0]}_C${position[1]}`;
 };
+
 
 /**
  * Casts the given state items into a string
@@ -248,12 +236,6 @@ const isItPossibleToMoveFurtherInSameDirection = function (
  * @returns {string} it of the form R<row number>_C<column number>_R<row number>_C<column number>_F<fishesCaught>
  *
  */
-
-const castPositionToString = function (position) {
-  return `R${position[0]}_C${position[1]}`;
-};
-
-
 const castStateToString = function (fromPosition, toPosition, fishesCaught) {
   return `R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}`;
 };
