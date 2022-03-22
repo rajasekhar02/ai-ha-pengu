@@ -82,7 +82,7 @@ const directionNames = [
   "top",
   "top-right"
 ];
-let FISHES_TO_REACH_GOAL = 20
+let FISHES_TO_REACH_GOAL = 20;
 // #endregion variables
 
 // #region helper functions
@@ -225,7 +225,6 @@ const castPositionToString = function (position) {
   return `R${position[0]}_C${position[1]}`;
 };
 
-
 /**
  * Casts the given state items into a string
  *
@@ -320,25 +319,38 @@ const simulateTraversingInTheSameDirection = function (currentState) {
  */
 
 const heuristicFunction = function (state1, state2) {
-  if (isPenguKilled(state1.currentPenguPosition) && state1.fishesCaughtWhileTraversing.length < 20) {
+  if (
+    isPenguKilled(state1.currentPenguPosition) &&
+    state1.fishesCaughtWhileTraversing.length < 20
+  ) {
     return false;
   }
-  if (isPenguKilled(state2.currentPenguPosition) && state2.fishesCaughtWhileTraversing.length < 20) {
+  if (
+    isPenguKilled(state2.currentPenguPosition) &&
+    state2.fishesCaughtWhileTraversing.length < 20
+  ) {
     return true;
   }
 
-  if (state1.fishesCaughtWhileTraversing.length - state2.fishesCaughtWhileTraversing.length !== 0) {
-    return state1.fishesCaughtWhileTraversing.length > state2.fishesCaughtWhileTraversing.length;
+  if (
+    state1.fishesCaughtWhileTraversing.length -
+      state2.fishesCaughtWhileTraversing.length !==
+    0
+  ) {
+    return (
+      state1.fishesCaughtWhileTraversing.length >
+      state2.fishesCaughtWhileTraversing.length
+    );
   }
   if (state1.status === "ON_SNOW") {
     return true;
   }
   if (state2.status === "ON_SNOW") {
-    return false
+    return false;
   }
 
-  return state1.path.length < state2.path.length
-}
+  return state1.path.length < state2.path.length;
+};
 /**
  *
  * Contains the implementation of the best first search over the game
@@ -346,17 +358,20 @@ const heuristicFunction = function (state1, state2) {
  * @param {Object< string, Array<string>, Array<number>, Array<number> >} initialState containing the status of the game,
  * fishes caught while traversing, direction visited as path, current pengu location
  */
-const findRouteUsingBestFSFrom = function (initialState) {
+const findRouteUsingAStarFrom = function (initialState) {
   const priorityQueue = new PriorityQueue(heuristicFunction);
   priorityQueue.push(initialState);
   let currentState;
   const visitedStates = new Set();
   while (!priorityQueue.isEmpty()) {
     currentState = priorityQueue.pop();
-    printLog(`popped-item:${currentState}`)
-    if (currentState.fishesCaughtWhileTraversing.length >= FISHES_TO_REACH_GOAL) {
+    printLog(`popped-item:${currentState}`);
+    if (
+      currentState.fishesCaughtWhileTraversing.length >= FISHES_TO_REACH_GOAL
+    ) {
       currentState.status = isPenguKilled(currentState.currentPenguPosition)
-        ? "KILLED" : "VICTORY";
+        ? "KILLED"
+        : "VICTORY";
       return currentState;
     }
     if (isPenguKilled(currentState.currentPenguPosition)) {
@@ -366,22 +381,23 @@ const findRouteUsingBestFSFrom = function (initialState) {
       (eachValidMove) => {
         let copyOfCurrentState = JSON.parse(JSON.stringify(currentState));
         copyOfCurrentState.currentPenguPosition = eachValidMove.position;
-        copyOfCurrentState.prevPenguPosition = currentState.currentPenguPosition;
+        copyOfCurrentState.prevPenguPosition =
+          currentState.currentPenguPosition;
         copyOfCurrentState.path.push(eachValidMove.direction);
         if (
           [" ", "*"].includes(
             grid[copyOfCurrentState.currentPenguPosition[0]][
-            copyOfCurrentState.currentPenguPosition[1]
+              copyOfCurrentState.currentPenguPosition[1]
             ]
           )
         ) {
-          copyOfCurrentState = simulateTraversingInTheSameDirection(copyOfCurrentState);
+          copyOfCurrentState =
+            simulateTraversingInTheSameDirection(copyOfCurrentState);
         }
         const visitedStateString = castStateToString(
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
-          copyOfCurrentState.fishesCaughtWhileTraversing.sort().join(""),
-
+          copyOfCurrentState.fishesCaughtWhileTraversing.sort().join("")
         );
         if (!visitedStates.has(visitedStateString)) {
           visitedStates.add(visitedStateString);
@@ -411,7 +427,7 @@ const generateOutputFile = async function (outputObj) {
   try {
     const { status, path, fishesCaughtWhileTraversing, currentPenguPosition } =
       outputObj;
-    printLog(`Path length:${path.length}`)
+    printLog(`Path length:${path.length}`);
     const updatedGrid = grid
       .map((row, indexRow) => {
         return row
@@ -463,18 +479,17 @@ const generateOutputFile = async function (outputObj) {
     // create the grid
     extractGridPositions(gridStrings);
     grid[penguPosition[0]][penguPosition[1]] = " ";
-    console.time("Best-First-Search");
-    let result = findRouteUsingBestFSFrom({
+    console.time("A-Star");
+    let result = findRouteUsingAStarFrom({
       currentPenguPosition: penguPosition,
       prevPenguPosition: penguPosition,
       fishesCaughtWhileTraversing: [],
       path: [],
       status: "INITIAL"
     });
-    console.timeEnd("Best-First-Search");
+    console.timeEnd("A-Star");
     // findRouteFrom(penguPosition, [], []);
     await generateOutputFile(result);
-
   } catch (err) {
     console.log("something went wrong", err);
   }
