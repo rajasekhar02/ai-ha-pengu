@@ -86,7 +86,17 @@ let FISHES_TO_REACH_GOAL = () => (fishPositions || []).length;
 // #endregion variables
 
 // #region helper functions
-
+const getGridSize = function () {
+  return gridColsSize * gridRowsSize;
+};
+const getSnowCellsPercentage = function () {
+  return snowPositions.length / getGridSize();
+};
+const getInnerWallCellsPercentage = function () {
+  const innerWalls =
+    wallPositions.length - (2 * gridColsSize + 2 * gridRowsSize) + 4;
+  return innerWalls / getGridSize();
+};
 /**
  * Stores the given position <row, column> in the corresponding the symbol array
  *
@@ -311,29 +321,29 @@ const simulateTraversingInTheSameDirection = function (currentState) {
 const heuristicFunction = function (currentState) {
   const totalFishesCount = fishPositions.length;
   const statusToCost = {
-    ON_SNOW: totalFishesCount * 0.9,
-    STUCK_BY_WALL: totalFishesCount * 0.4,
+    ON_SNOW: totalFishesCount * 0.7,
+    STUCK_BY_WALL: totalFishesCount * 0.5,
     ALIVE: totalFishesCount,
     KILLED: totalFishesCount
   };
   const fishesCaught = currentState.fishesCaughtWhileTraversing.length;
   const fishesYetToCaught = (totalFishesCount - fishesCaught) * -10;
-  // const pathLength = -1 * currentState.path.length;
-  return statusToCost[currentState.status] + fishesYetToCaught;
+  const pathLength = -10 * currentState.path.length;
+  return statusToCost[currentState.status] + pathLength + fishesYetToCaught;
 };
 
 const costFunction = function (prevState) {
   const totalFishesCount = fishPositions.length;
   const statusToCost = {
-    ON_SNOW: totalFishesCount * 0.4,
-    STUCK_BY_WALL: totalFishesCount * 0.4,
+    ON_SNOW: totalFishesCount * 0.8,
+    STUCK_BY_WALL: totalFishesCount * 0.9,
     ALIVE: totalFishesCount * 10,
     KILLED: -1 * totalFishesCount
   };
   const fishesCaught = prevState.fishesCaughtWhileTraversing.length * 10;
-  const pathLength = -1 * prevState.path.length;
+  // const pathLength = -1 * prevState.path.length;
 
-  return statusToCost[prevState.status] + fishesCaught + pathLength;
+  return statusToCost[prevState.status] + fishesCaught;
 };
 
 const comparator = function (state1, state2) {
