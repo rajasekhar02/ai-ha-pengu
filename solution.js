@@ -97,6 +97,38 @@ const getInnerWallCellsPercentage = function () {
     wallPositions.length - (2 * gridColsSize + 2 * gridRowsSize) + 4;
   return innerWalls / getGridSize();
 };
+const getThreatCellsPercentage = function () {
+  const threatCells = sharkPositions.length + bearPositions.length;
+  return threatCells / getGridSize();
+};
+const getIceCellsPercentage = function () {
+  const iceCellsPercentage =
+    1 -
+    (getThreatCellsPercentage() +
+      getInnerWallCellsPercentage() +
+      getSnowCellsPercentage());
+  return iceCellsPercentage;
+};
+const getDistanceBtwFishesYetToCaughtAndCurrentPenguState = function (
+  currentState
+) {
+  const fishesCaughtWhileTraversing = currentState.fishesCaughtWhileTraversing;
+  const fishesYetToCaught = fishPositions.filter((fishPosition) => {
+    const fishPositionString = castPositionToString(fishPosition);
+    return !new Set(
+      fishesCaughtWhileTraversing.map((x) => castPositionToString(x))
+    ).has(fishPositionString);
+  });
+  const currentPenguPosition = currentState.currentPenguPosition;
+  return fishesYetToCaught
+    .map((eachFishPosition) => {
+      return Math.hypot(
+        eachFishPosition[0] - currentPenguPosition[0],
+        eachFishPosition[1] - currentPenguPosition[1]
+      );
+    })
+    .reduce((acc, curr) => acc + curr, 0);
+};
 /**
  * Stores the given position <row, column> in the corresponding the symbol array
  *
@@ -316,29 +348,36 @@ const simulateTraversingInTheSameDirection = function (currentState) {
 const heuristicFunction = function (currentState) {
   const totalFishesCount = fishPositions.length;
   const statusToCost = {
-    ON_SNOW: totalFishesCount * 0.7,
-    STUCK_BY_WALL: totalFishesCount * 0.5,
-    ALIVE: totalFishesCount,
-    KILLED: totalFishesCount
+    ON_SNOW: totalFishesCount,
+    STUCK_BY_WALL: totalFishesCount,
+    ALIVE: totalFishesCount * 10,
+    KILLED: -10 * totalFishesCount,
+    INITIAL: 0
   };
   const fishesCaught = currentState.fishesCaughtWhileTraversing.length;
-  const fishesYetToCaught = (totalFishesCount - fishesCaught) * -10;
-  const pathLength = -10 * currentState.path.length;
-  return statusToCost[currentState.status] + pathLength + fishesYetToCaught;
+  const totalFishesCountYetToCaught = (totalFishesCount - fishesCaught) * -10;
+  const pathLength = -9 * currentState.path.length;
+  return [
+    statusToCost[currentState.status],
+    pathLength,
+    totalFishesCountYetToCaught
+  ].reduce((acc, curr) => acc + curr, 0);
 };
 
 const costFunction = function (prevState) {
   const totalFishesCount = fishPositions.length;
   const statusToCost = {
-    ON_SNOW: totalFishesCount * 0.3,
-    STUCK_BY_WALL: totalFishesCount * 0.9,
+    ON_SNOW: totalFishesCount,
+    STUCK_BY_WALL: totalFishesCount,
     ALIVE: totalFishesCount * 10,
-    KILLED: -1 * totalFishesCount
+    KILLED: -10 * totalFishesCount,
+    INITIAL: 0
   };
   const fishesCaught = prevState.fishesCaughtWhileTraversing.length * 10;
-  // const pathLength = -1 * prevState.path.length;
-
-  return statusToCost[prevState.status] + fishesCaught;
+  return [statusToCost[prevState.status], fishesCaught].reduce(
+    (acc, curr) => acc + curr,
+    0
+  );
 };
 
 const comparator = function (state1, state2) {
@@ -448,7 +487,7 @@ const generateOutputFile = async function (outputObj) {
       outputFileName,
       [
         path.join(""),
-        "path: " + path.length,
+        ...(!DEBUG_MODE ? [] : ["path: " + path.length]),
         fishesCaughtWhileTraversing.length,
         updatedGrid
       ].join("\n")
