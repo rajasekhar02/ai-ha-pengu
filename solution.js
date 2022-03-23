@@ -5,7 +5,7 @@ const fs = require("fs").promises;
 
 // #region Common Functions
 const disableLogInFunctions = ["noteThePosition"];
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 var getType = function (obj) {
   return {}.toString
     .call(obj)
@@ -309,32 +309,31 @@ const simulateTraversingInTheSameDirection = function (currentState) {
 };
 
 const heuristicFunction = function (currentState) {
-  const isAlive = currentState.status !== "KILLED" ? 1 : -1;
-  const isSnowCell = currentState.status === "ON_SNOW" && 0;
-  const fishesCaught = currentState.fishesCaughtWhileTraversing.length;
   const totalFishesCount = fishPositions.length;
-  const fishesYetToCaught = totalFishesCount - fishesCaught;
-  const pathLength = currentState.path.length;
-  return (
-    isAlive * totalFishesCount +
-    isSnowCell * totalFishesCount +
-    fishesYetToCaught * -10 +
-    -1 * pathLength
-  );
+  const statusToCost = {
+    ON_SNOW: totalFishesCount * 0.3,
+    STUCK_BY_WALL: totalFishesCount * 0.9,
+    ALIVE: totalFishesCount,
+    KILLED: 2 * totalFishesCount
+  };
+  const fishesCaught = currentState.fishesCaughtWhileTraversing.length;
+  const fishesYetToCaught = (totalFishesCount - fishesCaught) * -10;
+  // const pathLength = -1 * currentState.path.length;
+  return statusToCost[currentState.status] + fishesYetToCaught;
 };
 
 const costFunction = function (prevState) {
-  const isAlive = prevState.status !== "KILLED" ? 1 : -1;
-  const isSnowCell = prevState.status === "ON_SNOW" && 0;
-  const fishesCaught = prevState.fishesCaughtWhileTraversing.length;
-  const pathLength = prevState.path.length;
   const totalFishesCount = fishPositions.length;
-  return (
-    isAlive * totalFishesCount +
-    isSnowCell * totalFishesCount +
-    fishesCaught * 10 +
-    -1 * pathLength
-  );
+  const statusToCost = {
+    ON_SNOW: totalFishesCount * 0.1,
+    STUCK_BY_WALL: totalFishesCount * 0.9,
+    ALIVE: totalFishesCount * 10,
+    KILLED: -1 * totalFishesCount
+  };
+  const fishesCaught = prevState.fishesCaughtWhileTraversing.length * 10;
+  const pathLength = -1 * prevState.path.length;
+
+  return statusToCost[prevState.status] + fishesCaught + pathLength;
 };
 
 const comparator = function (state1, state2) {
@@ -389,7 +388,7 @@ const findRouteUsingAStarFrom = function (initialState) {
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
           copyOfCurrentState.fishesCaughtWhileTraversing.sort().join(""),
-          copyOfCurrentState.path.length
+          0
         );
         if (!visitedStates.has(visitedStateString)) {
           visitedStates.add(visitedStateString);
@@ -443,9 +442,12 @@ const generateOutputFile = async function (outputObj) {
       .join("\n");
     await fs.writeFile(
       outputFileName,
-      [path.join(""), fishesCaughtWhileTraversing.length, updatedGrid].join(
-        "\n"
-      )
+      [
+        path.join(""),
+        "path: " + path.length,
+        fishesCaughtWhileTraversing.length,
+        updatedGrid
+      ].join("\n")
     );
   } catch (err) {
     console.log("something went wrong", err);
