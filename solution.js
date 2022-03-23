@@ -311,10 +311,10 @@ const simulateTraversingInTheSameDirection = function (currentState) {
 const heuristicFunction = function (currentState) {
   const totalFishesCount = fishPositions.length;
   const statusToCost = {
-    ON_SNOW: totalFishesCount * 0.3,
-    STUCK_BY_WALL: totalFishesCount * 0.9,
+    ON_SNOW: totalFishesCount * 0.9,
+    STUCK_BY_WALL: totalFishesCount * 0.4,
     ALIVE: totalFishesCount,
-    KILLED: 2 * totalFishesCount
+    KILLED: totalFishesCount
   };
   const fishesCaught = currentState.fishesCaughtWhileTraversing.length;
   const fishesYetToCaught = (totalFishesCount - fishesCaught) * -10;
@@ -325,8 +325,8 @@ const heuristicFunction = function (currentState) {
 const costFunction = function (prevState) {
   const totalFishesCount = fishPositions.length;
   const statusToCost = {
-    ON_SNOW: totalFishesCount * 0.1,
-    STUCK_BY_WALL: totalFishesCount * 0.9,
+    ON_SNOW: totalFishesCount * 0.4,
+    STUCK_BY_WALL: totalFishesCount * 0.4,
     ALIVE: totalFishesCount * 10,
     KILLED: -1 * totalFishesCount
   };
