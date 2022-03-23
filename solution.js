@@ -244,13 +244,8 @@ const castPositionToString = function (position) {
  * @returns {string} it of the form R<row number>_C<column number>_R<row number>_C<column number>_F<fishesCaught>
  *
  */
-const castStateToString = function (
-  fromPosition,
-  toPosition,
-  fishesCaught,
-  path
-) {
-  return `R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}_${path}`;
+const castStateToString = function (fromPosition, toPosition, fishesCaught) {
+  return `R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}`;
 };
 
 /**
@@ -335,7 +330,7 @@ const heuristicFunction = function (currentState) {
 const costFunction = function (prevState) {
   const totalFishesCount = fishPositions.length;
   const statusToCost = {
-    ON_SNOW: totalFishesCount * 0.8,
+    ON_SNOW: totalFishesCount * 0.3,
     STUCK_BY_WALL: totalFishesCount * 0.9,
     ALIVE: totalFishesCount * 10,
     KILLED: -1 * totalFishesCount
@@ -397,8 +392,7 @@ const findRouteUsingAStarFrom = function (initialState) {
         const visitedStateString = castStateToString(
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
-          copyOfCurrentState.fishesCaughtWhileTraversing.sort().join(""),
-          0
+          copyOfCurrentState.fishesCaughtWhileTraversing.sort().join("")
         );
         if (!visitedStates.has(visitedStateString)) {
           visitedStates.add(visitedStateString);
