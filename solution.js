@@ -82,7 +82,7 @@ const directionNames = [
   "top",
   "top-right"
 ];
-let FISHES_TO_REACH_GOAL = 20;
+let FISHES_TO_REACH_GOAL = () => (fishPositions || []).length;
 // #endregion variables
 
 // #region helper functions
@@ -234,8 +234,13 @@ const castPositionToString = function (position) {
  * @returns {string} it of the form R<row number>_C<column number>_R<row number>_C<column number>_F<fishesCaught>
  *
  */
-const castStateToString = function (fromPosition, toPosition, fishesCaught) {
-  return `R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}`;
+const castStateToString = function (
+  fromPosition,
+  toPosition,
+  fishesCaught,
+  path
+) {
+  return `R${fromPosition[0]}_C${fromPosition[1]}__R${toPosition[0]}_C${toPosition[1]}_F${fishesCaught}_${path}`;
 };
 
 /**
@@ -303,53 +308,37 @@ const simulateTraversingInTheSameDirection = function (currentState) {
   };
 };
 
-/**
- * Contains the implementation of the heuristic function
- * following heuristics are considered:
- *  1. Pengu in the state1 killed without reaching the goal of catching 20 fishes then state2 is considered as valid state for expansion.
- *  2. Pengu in the state2 killed without reaching the goal of catching 20 fishes then state1 is considered as valid state for expansion.
- * if function is not returned from step1 and step2 then Pengu should be alive, so we check the below conditions:
- *  1. Check whether is a difference between number of fishes eaten in state1 and state2 then return true if state1 has more fishes than state2 else return false
- *  2. if both state1 and state2 has same number of fishes then if state1 status is ON_SNOW then return true
- *  3. if both state1 and state2 has same number of fishes, state1 status is not equal ON_SNOW then if state2 status is ON_SNOW then return true
- *  4. if there state1 and state2 are similar then consider the lengths of the path for state1 and state2, return true if state1 has shorter path else false which mean state2 has shorter path
- * @param {Object< string, Array<string>, Array<number>, Array<number> >} state1 containing the status of the game
- * @param {Object< string, Array<string>, Array<number>, Array<number> >} state2 containing the status of the game
- * @returns boolean based on the above heuristics
- */
+const heuristicFunction = function (currentState) {
+  const isAlive = currentState.status !== "KILLED" ? 1 : -1;
+  const isSnowCell = currentState.status === "ON_SNOW" && 0;
+  const fishesCaught = currentState.fishesCaughtWhileTraversing.length;
+  const totalFishesCount = fishPositions.length;
+  const fishesYetToCaught = totalFishesCount - fishesCaught;
+  const pathLength = currentState.path.length;
+  return (
+    isAlive * totalFishesCount +
+    isSnowCell * totalFishesCount +
+    fishesYetToCaught * -10 +
+    -1 * pathLength
+  );
+};
 
-const heuristicFunction = function (state1, state2) {
-  if (
-    isPenguKilled(state1.currentPenguPosition) &&
-    state1.fishesCaughtWhileTraversing.length < 20
-  ) {
-    return false;
-  }
-  if (
-    isPenguKilled(state2.currentPenguPosition) &&
-    state2.fishesCaughtWhileTraversing.length < 20
-  ) {
-    return true;
-  }
+const costFunction = function (prevState) {
+  const isAlive = prevState.status !== "KILLED" ? 1 : -1;
+  const isSnowCell = prevState.status === "ON_SNOW" && 0;
+  const fishesCaught = prevState.fishesCaughtWhileTraversing.length;
+  const pathLength = prevState.path.length;
+  const totalFishesCount = fishPositions.length;
+  return (
+    isAlive * totalFishesCount +
+    isSnowCell * totalFishesCount +
+    fishesCaught * 10 +
+    -1 * pathLength
+  );
+};
 
-  if (
-    state1.fishesCaughtWhileTraversing.length -
-      state2.fishesCaughtWhileTraversing.length !==
-    0
-  ) {
-    return (
-      state1.fishesCaughtWhileTraversing.length >
-      state2.fishesCaughtWhileTraversing.length
-    );
-  }
-  if (state1.status === "ON_SNOW") {
-    return true;
-  }
-  if (state2.status === "ON_SNOW") {
-    return false;
-  }
-
-  return state1.path.length < state2.path.length;
+const comparator = function (state1, state2) {
+  return state1.cost + state1.heuristic > state2.cost + state2.heuristic;
 };
 /**
  *
@@ -359,15 +348,15 @@ const heuristicFunction = function (state1, state2) {
  * fishes caught while traversing, direction visited as path, current pengu location
  */
 const findRouteUsingAStarFrom = function (initialState) {
-  const priorityQueue = new PriorityQueue(heuristicFunction);
+  const priorityQueue = new PriorityQueue(comparator);
   priorityQueue.push(initialState);
   let currentState;
   const visitedStates = new Set();
   while (!priorityQueue.isEmpty()) {
     currentState = priorityQueue.pop();
-    printLog(`popped-item:${currentState}`);
+    printLog(`popped-item:${JSON.stringify(currentState)}`);
     if (
-      currentState.fishesCaughtWhileTraversing.length >= FISHES_TO_REACH_GOAL
+      currentState.fishesCaughtWhileTraversing.length >= FISHES_TO_REACH_GOAL()
     ) {
       currentState.status = isPenguKilled(currentState.currentPenguPosition)
         ? "KILLED"
@@ -394,10 +383,13 @@ const findRouteUsingAStarFrom = function (initialState) {
           copyOfCurrentState =
             simulateTraversingInTheSameDirection(copyOfCurrentState);
         }
+        copyOfCurrentState.cost = costFunction(currentState);
+        copyOfCurrentState.heuristic = heuristicFunction(copyOfCurrentState);
         const visitedStateString = castStateToString(
           currentState.currentPenguPosition,
           copyOfCurrentState.currentPenguPosition,
-          copyOfCurrentState.fishesCaughtWhileTraversing.sort().join("")
+          copyOfCurrentState.fishesCaughtWhileTraversing.sort().join(""),
+          copyOfCurrentState.path.length
         );
         if (!visitedStates.has(visitedStateString)) {
           visitedStates.add(visitedStateString);
@@ -485,7 +477,9 @@ const generateOutputFile = async function (outputObj) {
       prevPenguPosition: penguPosition,
       fishesCaughtWhileTraversing: [],
       path: [],
-      status: "INITIAL"
+      status: "INITIAL",
+      cost: 0,
+      heuristic: 0
     });
     console.timeEnd("A-Star");
     // findRouteFrom(penguPosition, [], []);
