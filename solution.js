@@ -399,7 +399,9 @@ const findRouteUsingAStarFrom = function (initialState) {
     currentState = priorityQueue.pop();
     printLog(`popped-item:${JSON.stringify(currentState)}`);
     if (
-      currentState.fishesCaughtWhileTraversing.length >= FISHES_TO_REACH_GOAL()
+      currentState.fishesCaughtWhileTraversing.length >=
+        FISHES_TO_REACH_GOAL() &&
+      currentState.status !== "KILLED"
     ) {
       currentState.status = isPenguKilled(currentState.currentPenguPosition)
         ? "KILLED"
