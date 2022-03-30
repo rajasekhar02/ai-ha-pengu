@@ -26,14 +26,36 @@ string *Game::GameBoard::grid = nullptr;
 int Game::GameBoard::gridRowSize = 0;
 int Game::GameBoard::gridColSize = 0;
 map<string, vector<Game::Position>> Game::GameBoard::symbolPositions = createInitObjForMapOfSymbols();
+Game::GameBoard::GameBoard() {}
 Game::GameBoard::GameBoard(Game::Position currentPenguPosition, Status status)
 {
     this->status = status;
     this->currentPenguPosition = currentPenguPosition;
 };
+Game::GameBoard Game::GameBoard::clone()
+{
+    const Game::GameBoard *gameBoard = this;
+    Game::GameBoard gameBoardCopy;
+    gameBoardCopy.currentPenguPosition.row = gameBoard->currentPenguPosition.row;
+    gameBoardCopy.currentPenguPosition.column = gameBoard->currentPenguPosition.column;
+    for (const Position fishPosition : gameBoard->fishesCaughtWhileTraversing)
+    {
+        gameBoardCopy.fishesCaughtWhileTraversing.emplace(fishPosition.row, fishPosition.column);
+    }
+    for (const int direction : gameBoard->path)
+    {
+        gameBoardCopy.path.push_back(direction);
+    }
+    gameBoardCopy.status = gameBoard->status;
+    return gameBoardCopy;
+}
 Game::Position Game::GameBoard::getPenguPositionFromInput()
 {
     return Game::GameBoard::symbolPositions.at("pengu")[0];
+}
+int Game::GameBoard::getTotalFishCount()
+{
+    return (int)Game::GameBoard::symbolPositions.at("fish").size();
 }
 void Game::GameBoard::clearPenguPositionOnGrid()
 {
@@ -91,11 +113,11 @@ void Game::GameBoard::simulateTraversingInTheSameDirection()
             currentState->status = Game::Status::ON_SNOW;
             break;
         }
-        if (doesPositionHasGivenItem(newPosition, "fish"))
+        else if (doesPositionHasGivenItem(newPosition, "fish") && currentState->fishesCaughtWhileTraversing.find(newPosition) == currentState->fishesCaughtWhileTraversing.end())
         {
             currentState->fishesCaughtWhileTraversing.insert(newPosition);
         }
-        if (isPenguKilled(newPosition))
+        else if (isPenguKilled(newPosition))
         {
             currentState->status = Game::Status::KILLED;
             break;
@@ -143,9 +165,10 @@ bool Game::GameBoard::isPenguKilled(Game::Position position)
 {
     return (doesPositionHasGivenItem(position, "bear") || doesPositionHasGivenItem(position, "shark"));
 }
-vector<Game::Position> Game::GameBoard::getValidPositions(Game::Position currentPosition, int direction)
+Game::Position *Game::GameBoard::getValidPositions()
 {
-    vector<Game::Position> validPositions;
+    Game::Position currentPosition = this->currentPenguPosition;
+    Game::Position *validPositions = new Position[10];
     for (int directionIndex = 0; directionIndex < Game::directionsCount; directionIndex++)
     {
         Game::Position eachDirection = directions[directionIndex];
@@ -155,7 +178,7 @@ vector<Game::Position> Game::GameBoard::getValidPositions(Game::Position current
         Game::Position newPosition = getNewPosition(currentPosition, directionIndex);
         if (checkAMoveIsInvalid(newPosition))
             continue;
-        validPositions.push_back(newPosition);
+        validPositions[directionIndex] = newPosition;
     }
     return validPositions;
 }
@@ -196,6 +219,7 @@ ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
     Game::Position penguInputPosition = Game::GameBoard::getPenguPositionFromInput();
     os << "Pengu Position From Input: " << penguInputPosition.row << " " << penguInputPosition.column << endl;
     os << "Current Pengu Position: " << gameBoard.currentPenguPosition.row << " " << gameBoard.currentPenguPosition.column << endl;
+    os << "Fishes Capture Count: " << gameBoard.fishesCaughtWhileTraversing.size() << endl;
     os << "Path: ";
     for (int i = 0; i < gameBoard.path.size(); i++)
     {
@@ -204,4 +228,28 @@ ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
     os << endl;
     gameBoard.printGrid(os);
     return os;
+}
+
+/************Position Struct Definitions******************/
+Game::Position::Position()
+{
+    row = -1;
+    column = -1;
+}
+Game::Position::Position(int row, int column)
+{
+    this->row = row;
+    this->column = column;
+}
+bool Game::Position::operator<(const Position &b) const
+{
+    if (row - b.row != 0)
+    {
+        return row - b.row < 0;
+    }
+    return column - b.column < 0;
+}
+bool Game::Position::operator==(const Position &b) const
+{
+    return row == b.row && column == b.column;
 }

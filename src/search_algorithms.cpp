@@ -1,8 +1,43 @@
 #include "GameBoard.hpp"
 #include "search_algorithms.hpp"
+#include <deque>
+#include <vector>
+#include <iostream>
+using namespace std;
 namespace search_algorithms
 {
     Game::GameBoard breadthFirstSearch(Game::GameBoard initGameBoard)
     {
+        std::deque<Game::GameBoard> frontier;
+        const int totalFishCount = Game::GameBoard::getTotalFishCount();
+        Game::GameBoard currGameBoard = initGameBoard;
+        frontier.push_back(initGameBoard);
+        while (!frontier.empty())
+        {
+            currGameBoard = frontier.front();
+            frontier.pop_front();
+            if (currGameBoard.fishesCaughtWhileTraversing.size() == totalFishCount)
+            {
+                return currGameBoard;
+            }
+            if (currGameBoard.status == Game::Status::KILLED)
+            {
+                continue;
+            }
+            Game::Position *validPositions = currGameBoard.getValidPositions();
+            for (int eachDirection = 0; eachDirection < Game::directionsCount; eachDirection++)
+            {
+                Game::Position position = validPositions[eachDirection];
+                if (position.row == -1 && position.column == -1)
+                {
+                    continue;
+                }
+                Game::GameBoard newBoard = currGameBoard.clone();
+                newBoard.path.push_back(eachDirection);
+                newBoard.simulateTraversingInTheSameDirection();
+                frontier.push_back(newBoard);
+            }
+        }
+        return currGameBoard;
     }
 }

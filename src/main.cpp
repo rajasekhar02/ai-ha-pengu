@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include "GameBoard.hpp"
 #include "io.hpp"
+#include "search_algorithms.hpp"
 using namespace std;
 using namespace utils;
 
@@ -23,20 +24,19 @@ int main()
 
     Game::GameBoard gmBoard(currentPenguPosition, Game::Status::INITIAL);
 
+    Game::GameBoard gmBoardChecker(currentPenguPosition, Game::Status::INITIAL);
+
     cout << gmBoard;
 
-    int directionToTraverse;
+    gmBoard = search_algorithms::breadthFirstSearch(gmBoard);
 
-    cin >> directionToTraverse;
+    cout << gmBoard;
 
-    if (directionToTraverse < Game::directionsCount && directionToTraverse >= 0)
+    for (int i = 0; i < gmBoard.path.size(); i++)
     {
-        gmBoard.path.push_back(directionToTraverse);
-
-        gmBoard.simulateTraversingInTheSameDirection();
-
-        cout << gmBoard;
+        gmBoardChecker.path.push_back(gmBoard.path[i]);
+        gmBoardChecker.simulateTraversingInTheSameDirection();
     }
-
+    cout << gmBoardChecker;
     return 0;
 }
