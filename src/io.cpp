@@ -2,7 +2,7 @@
 #include"io.hpp"
 using namespace std;
 static vector<string> IO::getDateFromFile(string filePath){
-        ifstream input(filePath);
+       ifstream input(filePath);
        vector<string> lines;
         if(!input.is_open()) return {""};
         while(!input.eof()){
