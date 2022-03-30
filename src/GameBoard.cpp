@@ -15,7 +15,8 @@ map<string, vector<Game::Position>> createInitObjForMapOfSymbols()
     map<string, vector<Game::Position>> tempMapOfSymbols;
     for (const pair<char, string> eachSymbol : Game::symbolToNames)
     {
-        if(Game::symbolsToCollectPositions.find(eachSymbol.second) == Game::symbolsToCollectPositions.end()) continue;
+        if (Game::symbolsToCollectPositions[0] != eachSymbol.second && Game::symbolsToCollectPositions[1] != eachSymbol.second)
+            continue;
         tempMapOfSymbols.emplace(eachSymbol.second, vector<Game::Position>());
     }
     return tempMapOfSymbols;
@@ -39,8 +40,8 @@ void Game::GameBoard::initGrid(string *grid, int gridRowSize, int gridColSize)
     Game::GameBoard::gridRowSize = gridRowSize;
     Game::GameBoard::gridColSize = gridColSize;
 }
-void Game::GameBoard::initSymbolPositions(){
-    for()
+void Game::GameBoard::initSymbolPositions()
+{
 }
 void Game::GameBoard::simulateTraversingInTheSameDirection(Game::GameBoard &currentState)
 {
@@ -141,15 +142,7 @@ string Game::GameBoard::getStateStringWithGivenKeys(Game::Position fromPosition,
     }
     return string(stateString);
 }
-ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
-{
-    os << "from the operator overloading" << endl;
-    gameBoard.printGrid(os);
-    os << Game::GameBoard::gridRowSize << endl;
-    os << Game::GameBoard::gridColSize << endl;
-    return os;
-}
-ostream &Game::GameBoard::printGrid(ostream &os)
+void Game::GameBoard::printGrid(ostream &os)
 {
     for (int i = 0; i < gridRowSize; i++)
     {
@@ -159,4 +152,12 @@ ostream &Game::GameBoard::printGrid(ostream &os)
         }
         os << endl;
     }
+}
+ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
+{
+    os << "from the operator overloading" << endl;
+    gameBoard.printGrid(os);
+    os << Game::GameBoard::gridRowSize << endl;
+    os << Game::GameBoard::gridColSize << endl;
+    return os;
 }

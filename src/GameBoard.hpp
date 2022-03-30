@@ -34,6 +34,14 @@ namespace Game
     {
         int row;
         int column;
+        bool operator<(const Position &b) const
+        {
+            if (row - b.row != 0)
+            {
+                return row - b.row < 0;
+            }
+            return column - b.column < 0;
+        }
     };
     const Position directions[directionsCount] = {
         {0, 0},
@@ -46,7 +54,7 @@ namespace Game
         {-1, -1},
         {-1, 0},
         {-1, 1}};
-    const std::set<std::string> symbolsToCollectPositions{"fish", "pengu"};
+    const std::string symbolsToCollectPositions[2] = {"fish", "pengu"};
     struct GameBoard
     {
         static std::string *grid;
@@ -66,7 +74,7 @@ namespace Game
         bool isPenguKilled(Position position);
         std::vector<Position> getValidPositions(Position currentPosition, int direction);
         std::string getStateStringWithGivenKeys(Position fromPosition, Position toPosition, std::vector<Position> fishesCaught);
-        std::ostream &printGrid(std::ostream &os);
+        void printGrid(std::ostream &os);
         void simulateTraversingInTheSameDirection(Game::GameBoard &currentState);
     };
     std::ostream &operator<<(std::ostream &os, Game::GameBoard gameBoard);
