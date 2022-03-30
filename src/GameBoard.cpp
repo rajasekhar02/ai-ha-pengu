@@ -15,7 +15,7 @@ map<string, vector<Game::Position>> createInitObjForMapOfSymbols()
     map<string, vector<Game::Position>> tempMapOfSymbols;
     for (const pair<char, string> eachSymbol : Game::symbolToNames)
     {
-
+        if(Game::symbolsToCollectPositions.find(eachSymbol.second) == Game::symbolsToCollectPositions.end()) continue;
         tempMapOfSymbols.emplace(eachSymbol.second, vector<Game::Position>());
     }
     return tempMapOfSymbols;
@@ -39,15 +39,39 @@ void Game::GameBoard::initGrid(string *grid, int gridRowSize, int gridColSize)
     Game::GameBoard::gridRowSize = gridRowSize;
     Game::GameBoard::gridColSize = gridColSize;
 }
-ostream &Game::GameBoard::printGrid(ostream &os)
+void Game::GameBoard::initSymbolPositions(){
+    for()
+}
+void Game::GameBoard::simulateTraversingInTheSameDirection(Game::GameBoard &currentState)
 {
-    for (int i = 0; i < gridRowSize; i++)
+    Game::Position currentPenguPosition = currentState.currentPenguPosition;
+    set<Game::Position> fishesCaughtWhileTraversing = currentState.fishesCaughtWhileTraversing;
+    vector<int> path = currentState.path;
+    const int currentMovingDirectionIndex = path[path.size() - 1];
+    Game::Position newPosition = getNewPosition(currentPenguPosition, currentMovingDirectionIndex);
+    while (1)
     {
-        for (int j = 0; j < gridColSize; j++)
+        if (doesPositionHasGivenItem(newPosition, "wall"))
         {
-            os << grid[i][j];
+            break;
         }
-        os << endl;
+        currentPenguPosition = newPosition;
+        currentState.currentPenguPosition = currentPenguPosition;
+        if (doesPositionHasGivenItem(newPosition, "snow"))
+        {
+            currentState.status = Game::Status::ON_SNOW;
+            break;
+        }
+        if (doesPositionHasGivenItem(newPosition, "fish"))
+        {
+            currentState.fishesCaughtWhileTraversing.insert(newPosition);
+        }
+        if (isPenguKilled(newPosition))
+        {
+            currentState.status = Game::Status::KILLED;
+            break;
+        }
+        newPosition = getNewPosition(currentPenguPosition, currentMovingDirectionIndex);
     }
 }
 Game::Position Game::GameBoard::getNewPosition(Game::Position currentPosition, int direction)
@@ -86,6 +110,10 @@ bool Game::GameBoard::checkAMoveIsInvalid(Game::Position position)
     }
     return false;
 }
+bool Game::GameBoard::isPenguKilled(Game::Position position)
+{
+    return (doesPositionHasGivenItem(position, "bear") || doesPositionHasGivenItem(position, "shark"));
+}
 vector<Game::Position> Game::GameBoard::getValidPositions(Game::Position currentPosition, int direction)
 {
     vector<Game::Position> validPositions;
@@ -113,10 +141,6 @@ string Game::GameBoard::getStateStringWithGivenKeys(Game::Position fromPosition,
     }
     return string(stateString);
 }
-Game::GameBoard simulateTraversingInTheSameDirection(Game::GameBoard currentState)
-{
-    Game::Position currentPenguPosition = currentState.currentPenguPosition;
-}
 ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
 {
     os << "from the operator overloading" << endl;
@@ -124,4 +148,15 @@ ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
     os << Game::GameBoard::gridRowSize << endl;
     os << Game::GameBoard::gridColSize << endl;
     return os;
+}
+ostream &Game::GameBoard::printGrid(ostream &os)
+{
+    for (int i = 0; i < gridRowSize; i++)
+    {
+        for (int j = 0; j < gridColSize; j++)
+        {
+            os << grid[i][j];
+        }
+        os << endl;
+    }
 }

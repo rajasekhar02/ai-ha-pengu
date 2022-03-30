@@ -46,7 +46,7 @@ namespace Game
         {-1, -1},
         {-1, 0},
         {-1, 1}};
-
+    const std::set<std::string> symbolsToCollectPositions{"fish", "pengu"};
     struct GameBoard
     {
         static std::string *grid;
@@ -59,13 +59,15 @@ namespace Game
         std::vector<int> path;
         GameBoard();
         static void initGrid(std::string *grid, int gridRowSize, int gridColSize);
+        static void initSymbolPositions();
         Position getNewPosition(Position currentPosition, int direction);
         bool checkAMoveIsInvalid(Position position);
         bool doesPositionHasGivenItem(Position position, std::string symbolName);
+        bool isPenguKilled(Position position);
         std::vector<Position> getValidPositions(Position currentPosition, int direction);
         std::string getStateStringWithGivenKeys(Position fromPosition, Position toPosition, std::vector<Position> fishesCaught);
         std::ostream &printGrid(std::ostream &os);
-        Game::GameBoard simulateTraversingInTheSameDirection(Game::GameBoard currentState);
+        void simulateTraversingInTheSameDirection(Game::GameBoard &currentState);
     };
     std::ostream &operator<<(std::ostream &os, Game::GameBoard gameBoard);
 }
