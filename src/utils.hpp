@@ -10,6 +10,7 @@
 #define GAME_BOARD_UTILS_H
 namespace utils {
     std::vector<std::string> split(std::string s, char c = ' ');
+    std::string trim(std::string& str);
     int charToInt(char ch);
 }
 #endif //GAME_BOARD_UTILS_H

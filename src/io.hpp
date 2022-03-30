@@ -5,6 +5,8 @@
 #define IO_H
 
 namespace IO{
-    static std::vector<std::string> getDateFromFile(std::string filePath);
+    std::vector<std::string> getDataFromFile(std::string filePath);
+    std::pair<int,int> getGridSizeFromInputData(std::vector<std::string> lines);
+    std::string* getGridFromInputData(std::vector<std::string> lines);
 }
 #endif
