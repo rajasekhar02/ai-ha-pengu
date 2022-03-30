@@ -76,6 +76,8 @@ void Game::GameBoard::simulateTraversingInTheSameDirection()
     vector<int> path = currentState->path;
     const int currentMovingDirectionIndex = path[path.size() - 1];
     Game::Position newPosition = getNewPosition(currentPenguPosition, currentMovingDirectionIndex);
+    if (newPosition == currentPenguPosition)
+        return;
     while (1)
     {
         if (doesPositionHasGivenItem(newPosition, "wall"))
@@ -190,7 +192,9 @@ void Game::GameBoard::printGrid(ostream &os)
 }
 ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
 {
-    os << "Pengu Position from Input: " << Game::GameBoard::gridRowSize << " " << Game::GameBoard::gridColSize << endl;
+    os << "Grid Size: " << Game::GameBoard::gridRowSize << " " << Game::GameBoard::gridColSize << endl;
+    Game::Position penguInputPosition = Game::GameBoard::getPenguPositionFromInput();
+    os << "Pengu Position From Input: " << penguInputPosition.row << " " << penguInputPosition.column << endl;
     os << "Current Pengu Position: " << gameBoard.currentPenguPosition.row << " " << gameBoard.currentPenguPosition.column << endl;
     os << "Path: ";
     for (int i = 0; i < gameBoard.path.size(); i++)

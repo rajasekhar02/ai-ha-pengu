@@ -29,10 +29,14 @@ int main()
 
     cin >> directionToTraverse;
 
-    gmBoard.path.push_back(directionToTraverse);
+    if (directionToTraverse < Game::directionsCount && directionToTraverse >= 0)
+    {
+        gmBoard.path.push_back(directionToTraverse);
 
-    gmBoard.simulateTraversingInTheSameDirection();
+        gmBoard.simulateTraversingInTheSameDirection();
 
-    cout << gmBoard;
+        cout << gmBoard;
+    }
+
     return 0;
 }
