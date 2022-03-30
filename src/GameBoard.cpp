@@ -31,6 +31,15 @@ Game::GameBoard::GameBoard(Game::Position currentPenguPosition, Status status)
     this->status = status;
     this->currentPenguPosition = currentPenguPosition;
 };
+Game::Position Game::GameBoard::getPenguPositionFromInput()
+{
+    return Game::GameBoard::symbolPositions.at("pengu")[0];
+}
+void Game::GameBoard::clearPenguPositionOnGrid()
+{
+    Game::Position penguPosition = getPenguPositionFromInput();
+    Game::GameBoard::grid[penguPosition.row][penguPosition.column] = ' ';
+}
 void Game::GameBoard::initGrid(string *grid, int gridRowSize, int gridColSize)
 {
     Game::GameBoard::grid = new string[gridRowSize];
@@ -59,11 +68,12 @@ void Game::GameBoard::initSymbolPositions()
         }
     }
 }
-void Game::GameBoard::simulateTraversingInTheSameDirection(Game::GameBoard &currentState)
+void Game::GameBoard::simulateTraversingInTheSameDirection()
 {
-    Game::Position currentPenguPosition = currentState.currentPenguPosition;
-    set<Game::Position> fishesCaughtWhileTraversing = currentState.fishesCaughtWhileTraversing;
-    vector<int> path = currentState.path;
+    Game::GameBoard *currentState = this;
+    Game::Position currentPenguPosition = currentState->currentPenguPosition;
+    set<Game::Position> fishesCaughtWhileTraversing = currentState->fishesCaughtWhileTraversing;
+    vector<int> path = currentState->path;
     const int currentMovingDirectionIndex = path[path.size() - 1];
     Game::Position newPosition = getNewPosition(currentPenguPosition, currentMovingDirectionIndex);
     while (1)
@@ -73,19 +83,19 @@ void Game::GameBoard::simulateTraversingInTheSameDirection(Game::GameBoard &curr
             break;
         }
         currentPenguPosition = newPosition;
-        currentState.currentPenguPosition = currentPenguPosition;
+        currentState->currentPenguPosition = currentPenguPosition;
         if (doesPositionHasGivenItem(newPosition, "snow"))
         {
-            currentState.status = Game::Status::ON_SNOW;
+            currentState->status = Game::Status::ON_SNOW;
             break;
         }
         if (doesPositionHasGivenItem(newPosition, "fish"))
         {
-            currentState.fishesCaughtWhileTraversing.insert(newPosition);
+            currentState->fishesCaughtWhileTraversing.insert(newPosition);
         }
         if (isPenguKilled(newPosition))
         {
-            currentState.status = Game::Status::KILLED;
+            currentState->status = Game::Status::KILLED;
             break;
         }
         newPosition = getNewPosition(currentPenguPosition, currentMovingDirectionIndex);
@@ -164,19 +174,30 @@ void Game::GameBoard::printGrid(ostream &os)
     {
         for (int j = 0; j < gridColSize; j++)
         {
-            os << grid[i][j];
+            Game::Position position = {i, j};
+            if (position == this->currentPenguPosition)
+            {
+                os << (this->status == Game::Status::KILLED ? 'X' : 'P');
+            }
+            else
+            {
+
+                os << grid[i][j];
+            }
         }
         os << endl;
     }
 }
 ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
 {
-    os << "from the operator overloading" << endl;
+    os << "Pengu Position from Input: " << Game::GameBoard::gridRowSize << " " << Game::GameBoard::gridColSize << endl;
+    os << "Current Pengu Position: " << gameBoard.currentPenguPosition.row << " " << gameBoard.currentPenguPosition.column << endl;
+    os << "Path: ";
+    for (int i = 0; i < gameBoard.path.size(); i++)
+    {
+        os << gameBoard.path[i];
+    }
+    os << endl;
     gameBoard.printGrid(os);
-    os << Game::GameBoard::gridRowSize << endl;
-    os << Game::GameBoard::gridColSize << endl;
-    os << "Pengu Position" << endl;
-    os << gameBoard.currentPenguPosition.row << endl;
-    os << gameBoard.currentPenguPosition.column << endl;
     return os;
 }

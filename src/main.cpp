@@ -8,17 +8,31 @@ using namespace utils;
 int main()
 {
     vector<string> lines = IO::getDataFromFile("./input/input.txt");
+
     pair<int, int> gridSize = IO::getGridSizeFromInputData(lines);
+
     string *grid = IO::getGridFromInputData(lines);
+
     Game::GameBoard::initGrid(grid, gridSize.first, gridSize.second);
+
     Game::GameBoard::initSymbolPositions();
-    Game::Position currentPenguPosition = Game::GameBoard::symbolPositions.at("pengu")[0];
+
+    Game::Position currentPenguPosition = Game::GameBoard::getPenguPositionFromInput();
+
+    Game::GameBoard::clearPenguPositionOnGrid();
+
     Game::GameBoard gmBoard(currentPenguPosition, Game::Status::INITIAL);
-    Game::Position direction = gmBoard.getNewPosition({4, 3}, 1);
-    cout << direction.row << direction.column << endl;
-    cout << gmBoard << endl;
-    cout << gmBoard.checkAMoveIsInvalid({-1, -2}) << endl;
-    vector<Game::Position> validMoves = gmBoard.getValidPositions({1, 1}, 1);
-    cout << validMoves.size() << endl;
+
+    cout << gmBoard;
+
+    int directionToTraverse;
+
+    cin >> directionToTraverse;
+
+    gmBoard.path.push_back(directionToTraverse);
+
+    gmBoard.simulateTraversingInTheSameDirection();
+
+    cout << gmBoard;
     return 0;
 }

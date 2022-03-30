@@ -42,6 +42,10 @@ namespace Game
             }
             return column - b.column < 0;
         }
+        bool operator==(const Position &b) const
+        {
+            return row == b.row && column == b.column;
+        }
     };
     const Position directions[directionsCount] = {
         {0, 0},
@@ -69,6 +73,8 @@ namespace Game
         GameBoard(Position currentPenguPosition, Status status);
         static void initGrid(std::string *grid, int gridRowSize, int gridColSize);
         static void initSymbolPositions();
+        static Game::Position getPenguPositionFromInput();
+        static void clearPenguPositionOnGrid();
         Position getNewPosition(Position currentPosition, int direction);
         bool checkAMoveIsInvalid(Position position);
         bool doesPositionHasGivenItem(Position position, std::string symbolName);
@@ -76,7 +82,7 @@ namespace Game
         std::vector<Position> getValidPositions(Position currentPosition, int direction);
         std::string getStateStringWithGivenKeys(Position fromPosition, Position toPosition, std::vector<Position> fishesCaught);
         void printGrid(std::ostream &os);
-        void simulateTraversingInTheSameDirection(Game::GameBoard &currentState);
+        void simulateTraversingInTheSameDirection();
     };
     std::ostream &operator<<(std::ostream &os, Game::GameBoard gameBoard);
 }
