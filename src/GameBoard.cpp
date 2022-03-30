@@ -26,9 +26,10 @@ string *Game::GameBoard::grid = nullptr;
 int Game::GameBoard::gridRowSize = 0;
 int Game::GameBoard::gridColSize = 0;
 map<string, vector<Game::Position>> Game::GameBoard::symbolPositions = createInitObjForMapOfSymbols();
-Game::GameBoard::GameBoard()
+Game::GameBoard::GameBoard(Game::Position currentPenguPosition, Status status)
 {
-    status = Game::Status::INITIAL;
+    this->status = status;
+    this->currentPenguPosition = currentPenguPosition;
 };
 void Game::GameBoard::initGrid(string *grid, int gridRowSize, int gridColSize)
 {
@@ -42,6 +43,21 @@ void Game::GameBoard::initGrid(string *grid, int gridRowSize, int gridColSize)
 }
 void Game::GameBoard::initSymbolPositions()
 {
+    for (int i = 0; i < Game::GameBoard::gridRowSize; i++)
+    {
+        for (int j = 0; j < Game::GameBoard::gridColSize; j++)
+        {
+            string symbolName = Game::symbolToNames.at(grid[i][j]);
+            if (symbolName == "fish")
+            {
+                Game::GameBoard::symbolPositions.at(symbolName).push_back({i, j});
+            }
+            else if (symbolName == "pengu")
+            {
+                Game::GameBoard::symbolPositions.at(symbolName).push_back({i, j});
+            }
+        }
+    }
 }
 void Game::GameBoard::simulateTraversingInTheSameDirection(Game::GameBoard &currentState)
 {
@@ -159,5 +175,8 @@ ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
     gameBoard.printGrid(os);
     os << Game::GameBoard::gridRowSize << endl;
     os << Game::GameBoard::gridColSize << endl;
+    os << "Pengu Position" << endl;
+    os << gameBoard.currentPenguPosition.row << endl;
+    os << gameBoard.currentPenguPosition.column << endl;
     return os;
 }

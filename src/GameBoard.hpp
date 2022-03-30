@@ -66,6 +66,7 @@ namespace Game
         std::set<Position> fishesCaughtWhileTraversing;
         std::vector<int> path;
         GameBoard();
+        GameBoard(Position currentPenguPosition, Status status);
         static void initGrid(std::string *grid, int gridRowSize, int gridColSize);
         static void initSymbolPositions();
         Position getNewPosition(Position currentPosition, int direction);

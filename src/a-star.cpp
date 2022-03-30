@@ -11,7 +11,9 @@ int main()
     pair<int, int> gridSize = IO::getGridSizeFromInputData(lines);
     string *grid = IO::getGridFromInputData(lines);
     Game::GameBoard::initGrid(grid, gridSize.first, gridSize.second);
-    Game::GameBoard gmBoard;
+    Game::GameBoard::initSymbolPositions();
+    Game::Position currentPenguPosition = Game::GameBoard::symbolPositions.at("pengu")[0];
+    Game::GameBoard gmBoard(currentPenguPosition, Game::Status::INITIAL);
     Game::Position direction = gmBoard.getNewPosition({4, 3}, 1);
     cout << direction.row << direction.column << endl;
     cout << gmBoard << endl;
