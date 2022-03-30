@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <set>
 #include <string>
 #include <cstring>
 #include "utils.hpp"
@@ -10,6 +11,16 @@
 
 namespace Game
 {
+    enum Status
+    {
+        INITIAL,
+        VICTORY,
+        FAILED,
+        KILLED,
+        ALIVE,
+        ON_SNOW,
+        STRUCT_BY_WALL
+    };
     const std::map<char, std::string> symbolToNames = {
         {'*', "fish"},
         {'0', "snow"},
@@ -19,33 +30,42 @@ namespace Game
         {'P', "pengu"},
         {' ', "ice"}};
     const int directionsCount = 10;
-    const std::pair<int, int> directions[directionsCount] = {
-        std::make_pair(0, 0),
-        std::make_pair(1, -1),
-        std::make_pair(1, 0),
-        std::make_pair(1, 1),
-        std::make_pair(0, -1),
-        std::make_pair(0, 0),
-        std::make_pair(0, 1),
-        std::make_pair(-1, -1),
-        std::make_pair(-1, 0),
-        std::make_pair(-1, 1)};
-    class GameBoard
+    struct Position
     {
-    public:
+        int row;
+        int column;
+    };
+    const Position directions[directionsCount] = {
+        {0, 0},
+        {1, -1},
+        {1, 0},
+        {1, 1},
+        {0, -1},
+        {0, 0},
+        {0, 1},
+        {-1, -1},
+        {-1, 0},
+        {-1, 1}};
+
+    struct GameBoard
+    {
         static std::string *grid;
         static int gridRowSize;
         static int gridColSize;
-        static std::map<std::string, std::vector<std::pair<int, int>>> symbolPositions;
-        std::pair<int, int> currentPenguPosition;
+        static std::map<std::string, std::vector<Position>> symbolPositions;
+        Position currentPenguPosition;
+        Status status;
+        std::set<Position> fishesCaughtWhileTraversing;
+        std::vector<int> path;
         GameBoard();
         static void initGrid(std::string *grid, int gridRowSize, int gridColSize);
-        std::pair<int, int> getNewPosition(std::pair<int, int> currentPosition, int direction);
-        bool checkAMoveIsInvalid(std::pair<int, int> position);
-        bool doesPositionHasGivenItem(std::pair<int, int> position, std::string symbolName);
-        std::vector<std::pair<int, int>> getValidPositions(std::pair<int, int> currentPosition, int direction);
-        std::string getStateStringWithGivenKeys(std::pair<int, int> fromPosition, std::pair<int, int> toPosition, std::vector<std::pair<int, int>> fishesCaught);
+        Position getNewPosition(Position currentPosition, int direction);
+        bool checkAMoveIsInvalid(Position position);
+        bool doesPositionHasGivenItem(Position position, std::string symbolName);
+        std::vector<Position> getValidPositions(Position currentPosition, int direction);
+        std::string getStateStringWithGivenKeys(Position fromPosition, Position toPosition, std::vector<Position> fishesCaught);
         std::ostream &printGrid(std::ostream &os);
+        Game::GameBoard simulateTraversingInTheSameDirection(Game::GameBoard currentState);
     };
     std::ostream &operator<<(std::ostream &os, Game::GameBoard gameBoard);
 }

@@ -12,11 +12,11 @@ int main()
     string *grid = IO::getGridFromInputData(lines);
     Game::GameBoard::initGrid(grid, gridSize.first, gridSize.second);
     Game::GameBoard gmBoard;
-    pair<int, int> direction = gmBoard.getNewPosition(make_pair(4, 3), 1);
-    cout << direction.first << direction.second << endl;
+    Game::Position direction = gmBoard.getNewPosition({4, 3}, 1);
+    cout << direction.row << direction.column << endl;
     cout << gmBoard << endl;
-    cout << gmBoard.checkAMoveIsInvalid(make_pair(-1, -2)) << endl;
-    vector<pair<int, int>> validMoves = gmBoard.getValidPositions(make_pair(1, 1), 1);
+    cout << gmBoard.checkAMoveIsInvalid({-1, -2}) << endl;
+    vector<Game::Position> validMoves = gmBoard.getValidPositions({1, 1}, 1);
     cout << validMoves.size() << endl;
     return 0;
 }

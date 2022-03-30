@@ -10,13 +10,13 @@
 
 using namespace std;
 
-map<string, vector<pair<int, int>>> createInitObjForMapOfSymbols()
+map<string, vector<Game::Position>> createInitObjForMapOfSymbols()
 {
-    map<string, vector<pair<int, int>>> tempMapOfSymbols;
+    map<string, vector<Game::Position>> tempMapOfSymbols;
     for (const pair<char, string> eachSymbol : Game::symbolToNames)
     {
 
-        tempMapOfSymbols.emplace(eachSymbol.second, vector<pair<int, int>>());
+        tempMapOfSymbols.emplace(eachSymbol.second, vector<Game::Position>());
     }
     return tempMapOfSymbols;
 }
@@ -24,8 +24,11 @@ map<string, vector<pair<int, int>>> createInitObjForMapOfSymbols()
 string *Game::GameBoard::grid = nullptr;
 int Game::GameBoard::gridRowSize = 0;
 int Game::GameBoard::gridColSize = 0;
-map<string, vector<pair<int, int>>> Game::GameBoard::symbolPositions = createInitObjForMapOfSymbols();
-Game::GameBoard::GameBoard(){};
+map<string, vector<Game::Position>> Game::GameBoard::symbolPositions = createInitObjForMapOfSymbols();
+Game::GameBoard::GameBoard()
+{
+    status = Game::Status::INITIAL;
+};
 void Game::GameBoard::initGrid(string *grid, int gridRowSize, int gridColSize)
 {
     Game::GameBoard::grid = new string[gridRowSize];
@@ -47,30 +50,30 @@ ostream &Game::GameBoard::printGrid(ostream &os)
         os << endl;
     }
 }
-pair<int, int> Game::GameBoard::getNewPosition(pair<int, int> currentPosition, int direction)
+Game::Position Game::GameBoard::getNewPosition(Game::Position currentPosition, int direction)
 {
-    pair<int, int> directionCoordinates = directions[direction];
-    return make_pair(currentPosition.first + directionCoordinates.first, currentPosition.second + directionCoordinates.second);
+    Game::Position directionCoordinates = directions[direction];
+    return {currentPosition.row + directionCoordinates.row, currentPosition.column + directionCoordinates.column};
 }
-bool Game::GameBoard::doesPositionHasGivenItem(pair<int, int> position, string symbolName)
+bool Game::GameBoard::doesPositionHasGivenItem(Game::Position position, string symbolName)
 {
-    return Game::symbolToNames.at(grid[position.first][position.second]) == symbolName;
+    return Game::symbolToNames.at(grid[position.row][position.column]) == symbolName;
 }
-bool Game::GameBoard::checkAMoveIsInvalid(pair<int, int> position)
+bool Game::GameBoard::checkAMoveIsInvalid(Game::Position position)
 {
-    auto isWall = [this](pair<int, int> position)
+    auto isWall = [this](Game::Position position)
     {
         return doesPositionHasGivenItem(position, "wall");
     };
-    auto isPositionOutOfRowExtremes = [this](pair<int, int> position)
+    auto isPositionOutOfRowExtremes = [this](Game::Position position)
     {
-        return position.first > gridRowSize - 1 || position.first <= 0;
+        return position.row > gridRowSize - 1 || position.row <= 0;
     };
-    auto isPositionOutOfColumnExtremes = [this](pair<int, int> position)
+    auto isPositionOutOfColumnExtremes = [this](Game::Position position)
     {
-        return position.second > gridColSize - 1 || position.second <= 0;
+        return position.column > gridColSize - 1 || position.column <= 0;
     };
-    vector<function<bool(pair<int, int>)>> functions;
+    vector<function<bool(Game::Position)>> functions;
     functions.push_back(isPositionOutOfRowExtremes);
     functions.push_back(isPositionOutOfColumnExtremes);
     functions.push_back(isWall);
@@ -83,32 +86,36 @@ bool Game::GameBoard::checkAMoveIsInvalid(pair<int, int> position)
     }
     return false;
 }
-vector<pair<int, int>> Game::GameBoard::getValidPositions(pair<int, int> currentPosition, int direction)
+vector<Game::Position> Game::GameBoard::getValidPositions(Game::Position currentPosition, int direction)
 {
-    vector<pair<int, int>> validPositions;
+    vector<Game::Position> validPositions;
     for (int directionIndex = 0; directionIndex < Game::directionsCount; directionIndex++)
     {
-        pair<int, int> eachDirection = directions[directionIndex];
+        Game::Position eachDirection = directions[directionIndex];
         set<int> invalidDirections = {0, 5};
         if (invalidDirections.find(directionIndex) != invalidDirections.end())
             continue;
-        pair<int, int> newPosition = getNewPosition(currentPosition, directionIndex);
+        Game::Position newPosition = getNewPosition(currentPosition, directionIndex);
         if (checkAMoveIsInvalid(newPosition))
             continue;
         validPositions.push_back(newPosition);
     }
     return validPositions;
 }
-string Game::GameBoard::getStateStringWithGivenKeys(pair<int, int> fromPosition, pair<int, int> toPosition, vector<pair<int, int>> fishesCaught)
+string Game::GameBoard::getStateStringWithGivenKeys(Game::Position fromPosition, Game::Position toPosition, vector<Game::Position> fishesCaught)
 {
     char *stateString;
-    size_t size = snprintf(NULL, 0, "FR_%d_FC_%d_TR_%d_TC_%d", fromPosition.first, fromPosition.second, toPosition.first, toPosition.second);
-    snprintf(stateString, size, "FR_%d_FC_%d_TR_%d_TC_%d", fromPosition.first, fromPosition.second, toPosition.first, toPosition.second);
+    size_t size = snprintf(NULL, 0, "FR_%d_FC_%d_TR_%d_TC_%d", fromPosition.row, fromPosition.column, toPosition.row, toPosition.column);
+    snprintf(stateString, size, "FR_%d_FC_%d_TR_%d_TC_%d", fromPosition.row, fromPosition.column, toPosition.row, toPosition.column);
     for (int i = 0; i < fishesCaught.size(); i++)
     {
-        snprintf(stateString, strlen(stateString), "_FSH%d_R%d_C%d", i, fishesCaught[i].first, fishesCaught[i].second);
+        snprintf(stateString, strlen(stateString), "_FSH%d_R%d_C%d", i, fishesCaught[i].row, fishesCaught[i].column);
     }
     return string(stateString);
+}
+Game::GameBoard simulateTraversingInTheSameDirection(Game::GameBoard currentState)
+{
+    Game::Position currentPenguPosition = currentState.currentPenguPosition;
 }
 ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
 {
