@@ -6,9 +6,21 @@
 using namespace std;
 using namespace utils;
 
-int main(int argc, char **argv)
+/* Global variables */
+int max_work;
+int cutoff_depth;
+int max_children;
+int max_depth;
+
+MPI_Comm io_comm;
+int p;
+int my_rank;
+
+// void Get_root(NODE_T *root_ptr);
+/*----------------------------------*/
+void serialDFS(string filePath)
 {
-    vector<string> lines = IO::getDataFromFile(string(argv[1]));
+    vector<string> lines = IO::getDataFromFile(filePath);
 
     pair<int, int> gridSize = IO::getGridSizeFromInputData(lines);
 
@@ -39,6 +51,26 @@ int main(int argc, char **argv)
     cout << gmBoardChecker;
 
     cout << ((gmBoard.fishesCaughtWhileTraversing.size() == gmBoardChecker.fishesCaughtWhileTraversing.size()) ? "Accepted" : "Wrong Answer") << endl;
+}
+void parallelDFS(int argc, char **argv)
+{
+    int error;
+    // NODE_T root;
 
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &p);
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    MPI_Comm_dup(MPI_COMM_WORLD, &io_comm);
+
+    IO::Cache_io_rank(MPI_COMM_WORLD, io_comm);
+    string filePath = string(argv[1]);
+    vector<string> lines;
+    IO::getDataFromFileParallel(io_comm, filePath, lines);
+    MPI_Finalize();
+}
+int main(int argc, char **argv)
+{
+    // serialDFS(string(argv[2]));
+    parallelDFS(argc, argv);
     return 0;
 }

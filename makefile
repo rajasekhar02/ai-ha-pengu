@@ -1,5 +1,5 @@
 CFLAGS = -c -o
-CC = g++
+CC = mpic++
 SRC = ./src
 BIN = ./bin
 # Rules are of the format
