@@ -1,4 +1,5 @@
 #include <fstream>
+#include <cstring>
 #include "utils.hpp"
 #include "io.hpp"
 using namespace std;
@@ -27,6 +28,13 @@ pair<int, int> IO::getGridSizeFromInputData(vector<string> lines)
 {
     vector<string> gridSize = utils::split(lines[0], ' ');
     return make_pair(stoi(utils::trim(gridSize[0])), stoi(utils::trim(gridSize[1])));
+}
+void IO::getGridSizeFromInputData(vector<string> lines, int &gridRow, int &gridCol)
+{
+    vector<string> gridSize = utils::split(lines[0], ' ');
+    cout << lines[0] << endl;
+    gridRow = stoi(utils::trim(gridSize[0]));
+    gridCol = stoi(utils::trim(gridSize[1]));
 }
 string *IO::getGridFromInputData(vector<string> lines)
 {
@@ -357,19 +365,28 @@ int IO::getDataFromFileParallel(MPI_Comm io_comm, string filePath, vector<string
     }
     // MPI_Barrier(io_comm);
     MPI_Bcast(&linesCount, 1, MPI_INT, root, io_comm);
-    /* Create an Array with length of each line
-    Broadcast it from process 0 */
-    // int lin_siz[linesCount];
-    // if (p_rank == 0)
-    //     for (i = 0; i < linesCount; i++)
-    //         lin_siz[i] = strlen(lines[i]) + 1;
-
-    // MPI_Bcast(&lin_siz, linesCount, MPI_INT, 0, MPI_COMM_WORLD);
-
-    // /* Broadcast each line */
-    // for (i = 0; i < linesCount; i++)
-    //     MPI_Bcast(&lines[i], lin_siz[i], MPI_CHAR, 0, MPI_COMM_WORLD);
-    // MPI_Bcast(io_buf, BUFSIZ, MPI_CHAR, root, io_comm);
-    cout << linesCount << "my_io_rank" << my_io_rank << endl;
+    // broadcasting each line size
+    int lin_siz[linesCount];
+    if (my_io_rank == root)
+    {
+        for (int i = 0; i < linesCount; i++)
+        {
+            char *line = &inputLines[i][0];
+            lin_siz[i] = strlen(line) + 1;
+        }
+    }
+    MPI_Bcast(&lin_siz, linesCount, MPI_INT, root, io_comm);
+    for (int i = 0; i < linesCount; i++)
+    {
+        char *line = (char *)malloc(lin_siz[i]);
+        if (my_io_rank == root)
+        {
+            line = &inputLines[i][0];
+        }
+        MPI_Bcast(line, lin_siz[i], MPI_CHAR, root, io_comm);
+        // cout << line << " after " << my_io_rank << endl;
+        lines.push_back(string(line));
+    }
+    // cout << lines.size() << "my_io_rank" << my_io_rank << endl;
     return 1;
 }

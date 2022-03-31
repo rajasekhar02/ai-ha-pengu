@@ -242,7 +242,7 @@ ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
         os << gameBoard.path[i];
     }
     os << endl;
-    // gameBoard.printGrid(os);
+    gameBoard.printGrid(os);
     return os;
 }
 

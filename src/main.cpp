@@ -56,16 +56,48 @@ void parallelDFS(int argc, char **argv)
 {
     int error;
     // NODE_T root;
-
     MPI_Init(&argc, &argv);
+
     MPI_Comm_size(MPI_COMM_WORLD, &p);
+
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
     MPI_Comm_dup(MPI_COMM_WORLD, &io_comm);
 
     IO::Cache_io_rank(MPI_COMM_WORLD, io_comm);
+
     string filePath = string(argv[1]);
+
     vector<string> lines;
+
     IO::getDataFromFileParallel(io_comm, filePath, lines);
+
+    cout << my_rank << endl;
+
+    cout << "success" << endl;
+
+    int gridRow;
+
+    int gridCol;
+
+    IO::getGridSizeFromInputData(lines, gridRow, gridCol);
+
+    string *grid = IO::getGridFromInputData(lines);
+
+    Game::GameBoard::initGrid(grid, gridRow, gridCol);
+
+    Game::GameBoard::initSymbolPositions();
+
+    Game::Position currentPenguPosition = Game::GameBoard::getPenguPositionFromInput();
+
+    Game::GameBoard::clearPenguPositionOnGrid();
+
+    Game::GameBoard gmBoard(currentPenguPosition, Game::Status::INITIAL);
+
+    cout << gmBoard << endl;
+
+    cout << "completed" << endl;
+
     MPI_Finalize();
 }
 int main(int argc, char **argv)

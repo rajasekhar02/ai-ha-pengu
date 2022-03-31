@@ -15,6 +15,7 @@ namespace IO
     std::vector<std::string> getDataFromFile(std::string filePath);
     int getDataFromFileParallel(MPI_Comm io_comm, std::string filePath, std::vector<std::string> &lines);
     std::pair<int, int> getGridSizeFromInputData(std::vector<std::string> lines);
+    void getGridSizeFromInputData(std::vector<std::string> lines, int &gridRow, int &gridCol);
     std::string *getGridFromInputData(std::vector<std::string> lines);
     int Cache_io_rank(
         MPI_Comm orig_comm /* in     */,
