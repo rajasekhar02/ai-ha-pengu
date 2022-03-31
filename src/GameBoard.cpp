@@ -107,7 +107,8 @@ void Game::GameBoard::simulateTraversingInTheSameDirection()
             break;
         }
         currentPenguPosition = newPosition;
-        currentState->currentPenguPosition = currentPenguPosition;
+        currentState->currentPenguPosition.row = currentPenguPosition.row;
+        currentState->currentPenguPosition.column = currentPenguPosition.column;
         if (doesPositionHasGivenItem(newPosition, "snow"))
         {
             currentState->status = Game::Status::ON_SNOW;
@@ -182,16 +183,31 @@ Game::Position *Game::GameBoard::getValidPositions()
     }
     return validPositions;
 }
-string Game::GameBoard::getStateStringWithGivenKeys(Game::Position fromPosition, Game::Position toPosition, vector<Game::Position> fishesCaught)
+string Game::GameBoard::getStateStringWithGivenKeys(Game::Position fromPosition, Game::Position toPosition, set<Game::Position> fishesCaught)
 {
+    vector<string> arrVisitedStrings;
     char *stateString;
     size_t size = snprintf(NULL, 0, "FR_%d_FC_%d_TR_%d_TC_%d", fromPosition.row, fromPosition.column, toPosition.row, toPosition.column);
-    snprintf(stateString, size, "FR_%d_FC_%d_TR_%d_TC_%d", fromPosition.row, fromPosition.column, toPosition.row, toPosition.column);
-    for (int i = 0; i < fishesCaught.size(); i++)
+    stateString = (char *)malloc(size + 1);
+    snprintf(stateString, size + 1, "FR_%d_FC_%d_TR_%d_TC_%d", fromPosition.row, fromPosition.column, toPosition.row, toPosition.column);
+    int i = 0;
+    arrVisitedStrings.push_back(string(stateString));
+    for (const Position fishPosition : fishesCaught)
     {
-        snprintf(stateString, strlen(stateString), "_FSH%d_R%d_C%d", i, fishesCaught[i].row, fishesCaught[i].column);
+        free(stateString);
+        size = snprintf(NULL, 0, "_FSH%d_R%d_C%d", i, fishPosition.row, fishPosition.column);
+        stateString = (char *)malloc(size + 1);
+        snprintf(stateString, size + 1, "_FSH%d_R%d_C%d", i, fishPosition.row, fishPosition.column);
+        arrVisitedStrings.push_back(string(stateString));
+        i++;
     }
-    return string(stateString);
+    free(stateString);
+    string state = "";
+    for (const string st : arrVisitedStrings)
+    {
+        state += st;
+    }
+    return state;
 }
 void Game::GameBoard::printGrid(ostream &os)
 {
@@ -226,7 +242,7 @@ ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
         os << gameBoard.path[i];
     }
     os << endl;
-    gameBoard.printGrid(os);
+    // gameBoard.printGrid(os);
     return os;
 }
 

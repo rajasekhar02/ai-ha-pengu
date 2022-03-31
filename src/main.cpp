@@ -6,9 +6,9 @@
 using namespace std;
 using namespace utils;
 
-int main()
+int main(int argc, char **argv)
 {
-    vector<string> lines = IO::getDataFromFile("./input/input.txt");
+    vector<string> lines = IO::getDataFromFile(string(argv[1]));
 
     pair<int, int> gridSize = IO::getGridSizeFromInputData(lines);
 
@@ -24,19 +24,21 @@ int main()
 
     Game::GameBoard gmBoard(currentPenguPosition, Game::Status::INITIAL);
 
+    gmBoard = search_algorithms::depthFirstSearch(gmBoard);
+
+    cout << gmBoard;
+
     Game::GameBoard gmBoardChecker(currentPenguPosition, Game::Status::INITIAL);
-
-    cout << gmBoard;
-
-    gmBoard = search_algorithms::breadthFirstSearch(gmBoard);
-
-    cout << gmBoard;
 
     for (int i = 0; i < gmBoard.path.size(); i++)
     {
         gmBoardChecker.path.push_back(gmBoard.path[i]);
         gmBoardChecker.simulateTraversingInTheSameDirection();
     }
+
     cout << gmBoardChecker;
+
+    cout << ((gmBoard.fishesCaughtWhileTraversing.size() == gmBoardChecker.fishesCaughtWhileTraversing.size()) ? "Accepted" : "Wrong Answer") << endl;
+
     return 0;
 }

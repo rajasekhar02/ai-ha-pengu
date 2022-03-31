@@ -74,7 +74,7 @@ namespace Game
         bool doesPositionHasGivenItem(Position position, std::string symbolName);
         bool isPenguKilled(Position position);
         Position *getValidPositions();
-        std::string getStateStringWithGivenKeys(Position fromPosition, Position toPosition, std::vector<Position> fishesCaught);
+        std::string getStateStringWithGivenKeys(Position fromPosition, Position toPosition, std::set<Position> fishesCaught);
         void printGrid(std::ostream &os);
         void simulateTraversingInTheSameDirection();
     };
