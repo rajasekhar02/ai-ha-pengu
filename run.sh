@@ -17,7 +17,17 @@ if [ -z "$defaultOutputFileName" ]; then
     defaultOutputFileName="./output.txt"
 fi
 
+max_depth = 4
+
+cutoff_depth = 3
+
+max_work = 7
+
+max_children = 7
+
 make main
 
-./bin/finalgame.o "$defaultInputFileName" "$defaultOutputFileName"
+# "$defaultOutputFileName" 
+
+mpirun -np 3 ./bin/finalgame.o "$defaultInputFileName" "$max_depth" "$cutoff_depth" "$max_work" "$max_children"
 

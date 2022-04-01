@@ -4,6 +4,9 @@
 #include "io.hpp"
 #include "search_algorithms.hpp"
 #include "terminate.hpp"
+#include "node_stack.hpp"
+#include "service_requests.hpp"
+
 using namespace std;
 using namespace utils;
 
@@ -11,7 +14,6 @@ using namespace utils;
 int max_work;
 int cutoff_depth;
 int max_children;
-int max_depth;
 
 MPI_Comm io_comm;
 int p;
@@ -69,6 +71,14 @@ void parallelDFS(int argc, char **argv)
 
     string filePath = string(argv[1]);
 
+    node_stack::max_depth = stoi(string(argv[2]));
+
+    service_requests::cutoff_depth = stoi(string(argv[3]));
+
+    max_work = stoi(string(argv[4]));
+
+    max_children = stoi(string(argv[5]));
+
     vector<string> lines;
 
     IO::getDataFromFileParallel(io_comm, filePath, lines);
@@ -97,7 +107,7 @@ void parallelDFS(int argc, char **argv)
 
     cout << gmBoard << endl;
 
-    Setup_term_detect();
+    terminate::Setup_term_detect();
 
     // error = Initialize_soln(max_depth);
     // Cerror_test(io_comm, "Initialize_soln", error);

@@ -33,20 +33,21 @@ typedef struct
 } RATIONAL_T;
 
 extern MPI_Datatype rational_mpi_t;
+namespace terminate
+{
+    void Print_divisors(void);
+    void Setup_term_detect(void);
+    void Build_rational_mpi_t(void);
+    void Find_divisors(int x);
+    void Reduce(RATIONAL_T *y);
+    void Add(RATIONAL_T *x, RATIONAL_T *y);
+    void Divide_by_2(RATIONAL_T *x);
+    bool Equal(RATIONAL_T *x, RATIONAL_T *y);
 
-void Print_divisors(void);
-void Setup_term_detect(void);
-void Build_rational_mpi_t(void);
-void Find_divisors(int x);
-void Reduce(RATIONAL_T *y);
-void Add(RATIONAL_T *x, RATIONAL_T *y);
-void Divide_by_2(RATIONAL_T *x);
-bool Equal(RATIONAL_T *x, RATIONAL_T *y);
-
-void Return_energy(MPI_Comm comm);
-void Send_half_energy(int destination, MPI_Comm comm);
-void Recv_half_energy(int source, MPI_Comm comm);
-void Receive_returned_energy(MPI_Comm comm);
-bool Search_complete(MPI_Comm comm);
-
+    void Return_energy(MPI_Comm comm);
+    void Send_half_energy(int destination, MPI_Comm comm);
+    void Recv_half_energy(int source, MPI_Comm comm);
+    void Receive_returned_energy(MPI_Comm comm);
+    bool Search_complete(MPI_Comm comm);
+}
 #endif
