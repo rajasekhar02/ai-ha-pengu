@@ -27,11 +27,12 @@ namespace parallel_search_algorithms
     void Generate(Game::GameBoard initGameBoard, deque<Game::GameBoard> &frontier, int size, MPI_Comm comm)
     {
         Game::GameBoard node;
+        const int totalFishCount = Game::GameBoard::getTotalFishCount();
         while (!frontier.empty())
         {
             node = frontier.back();
             frontier.pop_back();
-            if (node.fishesCaughtWhileTraversing == 20)
+            if (node.fishesCaughtWhileTraversing.size() == totalFishCount)
             {
             }
         }

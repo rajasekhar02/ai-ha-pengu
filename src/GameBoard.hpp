@@ -77,6 +77,8 @@ namespace Game
         std::string getStateStringWithGivenKeys(Position fromPosition, Position toPosition, std::set<Position> fishesCaught);
         void printGrid(std::ostream &os);
         void simulateTraversingInTheSameDirection();
+        std::string castGameBoardToString();
+        static GameBoard castStringToGameBoard(std::string gameBoardString);
     };
     std::ostream &operator<<(std::ostream &os, Game::GameBoard gameBoard);
 }

@@ -55,7 +55,7 @@ namespace search_algorithms
         set<string> visitedPaths;
         Game::GameBoard currGameBoard = initGameBoard;
         frontier.push_back(initGameBoard);
-        MPI_Comm_size(comm, &p) while (!frontier.empty())
+        while (!frontier.empty())
         {
             currGameBoard = frontier.back();
             frontier.pop_back();

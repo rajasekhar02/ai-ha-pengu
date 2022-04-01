@@ -6,9 +6,15 @@
 #define SOLUTION_H
 #include "mpi.h"
 #include "GameBoard.hpp"
+#define update_mpi_t MPI_2INT
 
 namespace solution
 {
+    struct GameBoardSolution
+    {
+        int solnPathLength;
+        int rank;
+    };
     const int SOLUTION_TAG = 100;
     Game::GameBoard Best_solution(MPI_Comm comm);
     Game::GameBoard Local_best_solution(void);

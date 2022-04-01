@@ -3,6 +3,7 @@
 #include "GameBoard.hpp"
 #include "io.hpp"
 #include "search_algorithms.hpp"
+#include "terminate.hpp"
 using namespace std;
 using namespace utils;
 
@@ -95,6 +96,11 @@ void parallelDFS(int argc, char **argv)
     Game::GameBoard gmBoard(currentPenguPosition, Game::Status::INITIAL);
 
     cout << gmBoard << endl;
+
+    Setup_term_detect();
+
+    // error = Initialize_soln(max_depth);
+    // Cerror_test(io_comm, "Initialize_soln", error);
 
     cout << "completed" << endl;
 

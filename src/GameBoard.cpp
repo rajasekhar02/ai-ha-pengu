@@ -209,6 +209,57 @@ string Game::GameBoard::getStateStringWithGivenKeys(Game::Position fromPosition,
     }
     return state;
 }
+string Game::GameBoard::castGameBoardToString()
+{
+
+    GameBoard gM = *this;
+    string st = "#0#";
+    for (const Position p : gM.fishesCaughtWhileTraversing)
+    {
+        st += string("_") + to_string(p.row) + string("_") + to_string(p.column);
+    }
+    st += string("|#1#");
+    for (const int direction : gM.path)
+    {
+        st += string("_") + to_string(direction);
+    }
+    st += string("|#2#_");
+    st += to_string(gM.status);
+    st += string("|#3#_");
+    st += to_string(gM.currentPenguPosition.row) + string("_") + to_string(gM.currentPenguPosition.column);
+    return st;
+}
+Game::GameBoard Game::GameBoard::castStringToGameBoard(string gameBoardString)
+{
+    GameBoard gm;
+    vector<string> gMProperties = utils::split(gameBoardString, '|');
+    for (int i = 0; i < gMProperties.size(); i++)
+    {
+        vector<string> eachProperty = utils::split(gMProperties[i], '_');
+        switch ((eachProperty[0][1] - '0'))
+        {
+        case 0:
+            for (int i = 1; i < eachProperty.size(); i += 2)
+            {
+                gm.fishesCaughtWhileTraversing.emplace(stoi(eachProperty[i]), stoi(eachProperty[i + 1]));
+            }
+            break;
+        case 1:
+            for (int i = 1; i < eachProperty.size(); i += 1)
+            {
+                gm.path.push_back(stoi(eachProperty[i]));
+            }
+            break;
+        case 2:
+            gm.status = static_cast<Status>(stoi(eachProperty[1]));
+            break;
+        case 3:
+            gm.currentPenguPosition = {stoi(eachProperty[1]), stoi(eachProperty[2])};
+            break;
+        }
+    }
+    return gm;
+}
 void Game::GameBoard::printGrid(ostream &os)
 {
     for (int i = 0; i < gridRowSize; i++)
