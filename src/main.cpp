@@ -94,7 +94,21 @@ void parallelDFS(int argc, char **argv)
 
     Game::GameBoard gmBoard(currentPenguPosition, Game::Status::INITIAL);
 
-    cout << gmBoard << endl;
+    gmBoard = search_algorithms::parallelDepthFirshSearch(gmBoard);
+
+    cout << gmBoard;
+
+    Game::GameBoard gmBoardChecker(currentPenguPosition, Game::Status::INITIAL);
+
+    for (int i = 0; i < gmBoard.path.size(); i++)
+    {
+        gmBoardChecker.path.push_back(gmBoard.path[i]);
+        gmBoardChecker.simulateTraversingInTheSameDirection();
+    }
+
+    cout << gmBoardChecker;
+
+    cout << ((gmBoard.fishesCaughtWhileTraversing.size() == gmBoardChecker.fishesCaughtWhileTraversing.size()) ? "Accepted" : "Wrong Answer") << endl;
 
     cout << "completed" << endl;
 

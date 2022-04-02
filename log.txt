@@ -1,15 +1,18 @@
-g++ -c -o bin/search_algorithms.o src/search_algorithms.cpp
-g++ -o ./bin/finalgame.o ./bin/utils.o ./bin/GameBoard.o ./bin/io.o ./bin/search_algorithms.o ./bin/main.o
-./input/input4.txt
-Grid Size: 13 69
-Pengu Position From Input: 2 38
-Current Pengu Position: 1 25
-Fishes Capture Count: 11
-Path: 744429676167186639782787349894863894396761671866397827873498948617398
-Grid Size: 13 69
-Pengu Position From Input: 2 38
-Current Pengu Position: 1 25
-Fishes Capture Count: 11
-Path: 744429676167186639782787349894863894396761671866397827873498948617398
-Accepted
-"./bin/finalgame.o "$defaultInputFileName" "$defaultOutputFileName"" command filed with exit code 0.
+mpic++ -c -o bin/GameBoard.o src/GameBoard.cpp
+mpic++ -o ./bin/finalgame.o ./bin/utils.o ./bin/GameBoard.o ./bin/io.o ./bin/search_algorithms.o ./bin/main.o
+8
+0
+success
+6 20
+8start direction8
+8
+killed
+1 10
+9
+killed
+1 11
+0
+1
+3 9
+2
+"mpirun -np 1 ./bin/finalgame.o "$defaultInputFileName" "$defaultOutputFileName"" command filed with exit code 139.

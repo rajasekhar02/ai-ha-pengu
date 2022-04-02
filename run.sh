@@ -10,7 +10,7 @@ defaultInputFileName=$1
 defaultOutputFileName=$2
 
 if [ -z "$defaultInputFileName" ]; then
-    defaultInputFileName="./input/input.txt"
+    defaultInputFileName="./input/input2.txt"
 fi
 
 if [ -z "$defaultOutputFileName" ]; then
@@ -19,5 +19,5 @@ fi
 
 make main
 
-./bin/finalgame.o "$defaultInputFileName" "$defaultOutputFileName"
+mpirun -np 1 ./bin/finalgame.o "$defaultInputFileName" "$defaultOutputFileName"
 
