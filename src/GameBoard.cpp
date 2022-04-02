@@ -90,6 +90,56 @@ void Game::GameBoard::initSymbolPositions()
         }
     }
 }
+std::string Game::GameBoard::castGameBoardToString()
+{
+    string st = "#0#";
+    Game::GameBoard gM = *this;
+    for (const Position p : gM.fishesCaughtWhileTraversing)
+    {
+        st += string("_") + to_string(p.row) + string("_") + to_string(p.column);
+    }
+    st += string("|#1#");
+    for (const int direction : gM.path)
+    {
+        st += string("_") + to_string(direction);
+    }
+    st += string("|#2#_");
+    st += to_string(gM.status);
+    st += string("|#3#_");
+    st += to_string(gM.currentPenguPosition.row) + string("_") + to_string(gM.currentPenguPosition.column);
+    return st;
+}
+Game::GameBoard Game::GameBoard::castStringToGameBoard(string gameBoardString)
+{
+    Game::GameBoard gm;
+    vector<string> gMProperties = utils::split(gameBoardString, '|');
+    for (int i = 0; i < gMProperties.size(); i++)
+    {
+        vector<string> eachProperty = utils::split(gMProperties[i], '_');
+        switch ((eachProperty[0][1] - '0'))
+        {
+        case 0:
+            for (int i = 1; i < eachProperty.size(); i += 2)
+            {
+                gm.fishesCaughtWhileTraversing.emplace(stoi(eachProperty[i]), stoi(eachProperty[i + 1]));
+            }
+            break;
+        case 1:
+            for (int i = 1; i < eachProperty.size(); i += 1)
+            {
+                gm.path.push_back(stoi(eachProperty[i]));
+            }
+            break;
+        case 2:
+            gm.status = static_cast<Game::Status>(stoi(eachProperty[1]));
+            break;
+        case 3:
+            gm.currentPenguPosition = {stoi(eachProperty[1]), stoi(eachProperty[2])};
+            break;
+        }
+    }
+    return gm;
+}
 void Game::GameBoard::simulateTraversingInTheSameDirection()
 {
     Game::GameBoard *currentState = this;
@@ -97,6 +147,7 @@ void Game::GameBoard::simulateTraversingInTheSameDirection()
     set<Game::Position> fishesCaughtWhileTraversing = currentState->fishesCaughtWhileTraversing;
     vector<int> path = currentState->path;
     const int currentMovingDirectionIndex = path[path.size() - 1];
+
     Game::Position newPosition = getNewPosition(currentPenguPosition, currentMovingDirectionIndex);
     if (newPosition == currentPenguPosition)
         return;
@@ -104,11 +155,14 @@ void Game::GameBoard::simulateTraversingInTheSameDirection()
     {
         if (doesPositionHasGivenItem(newPosition, "wall"))
         {
+
             break;
         }
+
         currentPenguPosition = newPosition;
         currentState->currentPenguPosition.row = currentPenguPosition.row;
         currentState->currentPenguPosition.column = currentPenguPosition.column;
+
         if (doesPositionHasGivenItem(newPosition, "snow"))
         {
             currentState->status = Game::Status::ON_SNOW;
@@ -120,6 +174,7 @@ void Game::GameBoard::simulateTraversingInTheSameDirection()
         }
         else if (isPenguKilled(newPosition))
         {
+
             currentState->status = Game::Status::KILLED;
             break;
         }
@@ -220,6 +275,10 @@ void Game::GameBoard::printGrid(ostream &os)
             {
                 os << (this->status == Game::Status::KILLED ? 'X' : 'P');
             }
+            else if (this->fishesCaughtWhileTraversing.find({i, j}) != this->fishesCaughtWhileTraversing.end())
+            {
+                os << " ";
+            }
             else
             {
 
@@ -242,7 +301,7 @@ ostream &Game::operator<<(ostream &os, Game::GameBoard gameBoard)
         os << gameBoard.path[i];
     }
     os << endl;
-    gameBoard.printGrid(os);
+    // gameBoard.printGrid(os);
     return os;
 }
 
